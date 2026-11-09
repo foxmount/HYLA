@@ -1,11 +1,4 @@
-const reports = [
-  { id: 1, title: 'Buraco na via próximo à praça', category: 'Buracos', neighborhood: 'Centro', status: 'pending', time: 'Há 35 min', mine: false, location: [-23.264, -47.299] },
-  { id: 2, title: 'Poste de iluminação apagado', category: 'Iluminação', neighborhood: 'Vila Nova', status: 'progress', time: 'Há 2 horas', mine: false, location: [-23.251, -47.304] },
-  { id: 3, title: 'Descarte irregular de resíduos', category: 'Lixo', neighborhood: 'Jardim Paraíso', status: 'pending', time: 'Há 5 horas', mine: false, location: [-23.252, -47.286] },
-  { id: 4, title: 'Poda de árvore em área pública', category: 'Árvores', neighborhood: 'Parque Industrial', status: 'resolved', time: 'Ontem', mine: false, location: [-23.281, -47.307] },
-  { id: 5, title: 'Faixa de pedestres apagada', category: 'Sinalização', neighborhood: 'Centro', status: 'progress', time: 'Ontem', mine: false, location: [-23.267, -47.295] },
-  { id: 6, title: 'Calçada danificada perto da escola', category: 'Outros', neighborhood: 'Vila Nova', status: 'resolved', time: 'Há 2 dias', mine: false, location: [-23.247, -47.3] }
-];
+const reports = [];
 
 const statusDetails = {
   pending: { label: 'Pendente', classes: 'bg-red-50 text-red-700', icon: 'circle-alert' },
@@ -25,7 +18,9 @@ const categoryDetails = {
 let activeFilter = 'all';
 let showMine = false;
 let activePage = 'map';
+let currentUser = null;
 
+const supabaseClient = window.hylaSupabase;
 const reportList = document.getElementById('report-list');
 const emptyState = document.getElementById('empty-state');
 const reportSearch = document.getElementById('report-search');
@@ -52,13 +47,6 @@ L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
   maxZoom: 19
 }).addTo(map);
 
-const neighborhoodLocations = [
-  { name: 'centro', location: [-23.2645, -47.2992] },
-  { name: 'vila nova', location: [-23.251, -47.304] },
-  { name: 'jardim paraiso', location: [-23.252, -47.286] },
-  { name: 'parque industrial', location: [-23.281, -47.307] }
-];
-
 function escapeHTML(value) {
   return String(value).replace(/[&<>"']/g, (character) => ({
     '&': '&amp;',
@@ -69,18 +57,37 @@ function escapeHTML(value) {
   })[character]);
 }
 
+function formatRelativeTime(timestamp) {
+  const elapsedMinutes = Math.max(0, Math.floor((Date.now() - new Date(timestamp).getTime()) / 60000));
+  if (elapsedMinutes < 1) return 'Agora';
+  if (elapsedMinutes < 60) return `Há ${elapsedMinutes} min`;
+  const elapsedHours = Math.floor(elapsedMinutes / 60);
+  if (elapsedHours < 24) return `Há ${elapsedHours} h`;
+  const elapsedDays = Math.floor(elapsedHours / 24);
+  return elapsedDays === 1 ? 'Ontem' : `Há ${elapsedDays} dias`;
+}
+
+function showDatabaseError(error, title = 'Erro ao acessar as ocorrências') {
+  console.error(title, error);
+  document.getElementById('connection-status').textContent = 'Erro de conexão';
+  Swal.fire({
+    icon: 'error',
+    title,
+    text: error.message || 'Verifique sua conexão e as configurações do Supabase.',
+    confirmButtonColor: '#d7ff00'
+  });
+}
+
 function renderReports() {
   const searchTerm = reportSearch.value.trim().toLocaleLowerCase('pt-BR');
   const visibleReports = reports.filter((report) => {
     const matchesStatus = activeFilter === 'all' || report.status === activeFilter;
-    const matchesSearch = `${report.title} ${report.category} ${report.neighborhood}`
-      .toLocaleLowerCase('pt-BR')
-      .includes(searchTerm);
-    return matchesStatus && matchesSearch && (!showMine || report.mine);
+    const searchableText = `${report.title} ${report.category} ${report.neighborhood}`.toLocaleLowerCase('pt-BR');
+    return matchesStatus && searchableText.includes(searchTerm) && (!showMine || report.mine);
   });
 
   reportList.innerHTML = visibleReports.map((report) => {
-    const status = statusDetails[report.status];
+    const status = statusDetails[report.status] || statusDetails.pending;
     const category = categoryDetails[report.category] || categoryDetails.Outros;
     return `
       <article class="flex flex-col gap-3 px-5 py-4 transition hover:bg-slate-50 sm:flex-row sm:items-center">
@@ -106,8 +113,29 @@ function renderReports() {
   reportList.classList.toggle('hidden', visibleReports.length === 0);
   document.getElementById('report-count').textContent =
     `${visibleReports.length} ${visibleReports.length === 1 ? 'ocorrência' : 'ocorrências'}`;
+  renderRecentReports();
   renderMapMarkers();
   lucide.createIcons();
+}
+
+function renderRecentReports() {
+  const recent = reports.slice(0, 3);
+  const container = document.getElementById('recent-reports');
+  container.innerHTML = recent.map((report) => {
+    const status = statusDetails[report.status] || statusDetails.pending;
+    const activityClass = report.status === 'resolved' ? 'is-resolved' : report.status === 'progress' ? 'is-progress' : 'is-new';
+    const icon = report.status === 'resolved' ? 'check' : report.status === 'progress' ? 'wrench' : 'plus';
+    return `
+      <div>
+        <span class="activity-icon ${activityClass}"><i data-lucide="${icon}" class="h-4 w-4"></i></span>
+        <p><strong>${escapeHTML(report.title)}</strong><small>${escapeHTML(report.neighborhood)} · ${status.label} · ${escapeHTML(report.time)}</small></p>
+      </div>
+    `;
+  }).join('');
+
+  if (!recent.length) {
+    container.innerHTML = '<p class="py-4 text-xs text-slate-500">Ainda não há ocorrências. Seja o primeiro a registrar um relato.</p>';
+  }
 }
 
 function renderMapMarkers() {
@@ -120,9 +148,15 @@ function renderMapMarkers() {
   });
 
   mapMarkers.clearLayers();
-  document.getElementById('map-count').textContent = visibleReports.length;
+  const mappedReports = visibleReports.filter((report) => report.location);
+  document.getElementById('map-count').textContent = mappedReports.length;
+  const unlocatedCount = visibleReports.length - mappedReports.length;
+  const unlocatedLabel = document.getElementById('map-unlocated');
+  unlocatedLabel.textContent = unlocatedCount ? `${unlocatedCount} sem localização` : '';
+  unlocatedLabel.classList.toggle('hidden', unlocatedCount === 0);
   visibleReports.forEach((report) => {
-    const status = statusDetails[report.status];
+    if (!report.location) return;
+    const status = statusDetails[report.status] || statusDetails.pending;
     const markerIcon = L.divIcon({
       className: '',
       html: `<span class="map-marker map-marker-${report.status}" aria-label="${status.label}"></span>`,
@@ -134,11 +168,44 @@ function renderMapMarkers() {
       <div class="map-popup">
         <p style="font-size:11px;color:#d7ff00;font-weight:700;text-transform:uppercase;letter-spacing:.08em">${escapeHTML(report.category)}</p>
         <p style="margin-top:5px;font-weight:700">${escapeHTML(report.title)}</p>
-        <p style="margin-top:4px;font-size:12px;color:#929991">${escapeHTML(report.neighborhood)} · ${status.label} · localização aproximada</p>
+        <p style="margin-top:4px;font-size:12px;color:#929991">${escapeHTML(report.neighborhood)} · ${status.label}</p>
       </div>
     `);
     mapMarkers.addLayer(marker);
   });
+
+}
+
+function updateStats() {
+  document.getElementById('stat-total').textContent = reports.length;
+  document.getElementById('stat-pending').textContent = reports.filter((report) => report.status === 'pending').length;
+  document.getElementById('stat-progress').textContent = reports.filter((report) => report.status === 'progress').length;
+  document.getElementById('stat-resolved').textContent = reports.filter((report) => report.status === 'resolved').length;
+}
+
+async function loadReports() {
+  const { data, error } = await supabaseClient
+    .from('ocorrencias')
+    .select('id,user_id,title,description,category,neighborhood,status,latitude,longitude,created_at')
+    .order('created_at', { ascending: false });
+
+  if (error) throw error;
+
+  reports.splice(0, reports.length, ...data.map((row) => ({
+    id: row.id,
+    userId: row.user_id,
+    title: row.title,
+    description: row.description,
+    category: row.category,
+    neighborhood: row.neighborhood,
+    status: row.status,
+    time: formatRelativeTime(row.created_at),
+    mine: row.user_id === currentUser.id,
+    location: row.latitude !== null && row.longitude !== null ? [row.latitude, row.longitude] : null
+  })));
+
+  updateStats();
+  renderReports();
 }
 
 function switchPage(page) {
@@ -162,9 +229,7 @@ function switchPage(page) {
     reports: showMine ? 'Minhas ocorrências' : 'Ocorrências'
   };
   document.getElementById('page-title').textContent = pageTitles[view];
-  document.getElementById('reports-heading').textContent = pageTitles[view] === 'Minhas ocorrências'
-    ? 'Minhas ocorrências'
-    : 'Ocorrências';
+  document.getElementById('reports-heading').textContent = pageTitles[view];
   renderReports();
   if (view === 'map') requestAnimationFrame(() => map.invalidateSize());
 }
@@ -172,13 +237,6 @@ function switchPage(page) {
 document.querySelectorAll('[data-page-target]').forEach((button) => {
   button.addEventListener('click', () => switchPage(button.dataset.pageTarget));
 });
-
-function updateStats() {
-  document.getElementById('stat-total').textContent = reports.length;
-  document.getElementById('stat-pending').textContent = reports.filter((report) => report.status === 'pending').length;
-  document.getElementById('stat-progress').textContent = reports.filter((report) => report.status === 'progress').length;
-  document.getElementById('stat-resolved').textContent = reports.filter((report) => report.status === 'resolved').length;
-}
 
 function setActiveFilter(filter) {
   activeFilter = filter;
@@ -212,67 +270,129 @@ document.querySelectorAll('[data-open-report]').forEach((button) => {
 function closeReportDialog() {
   reportDialog.close();
   reportForm.reset();
+  document.getElementById('location-status').textContent =
+    'Sem localização precisa, o relato aparece na lista, mas não recebe marcador no mapa.';
 }
 
 document.getElementById('close-report-dialog').addEventListener('click', closeReportDialog);
 document.getElementById('cancel-report').addEventListener('click', closeReportDialog);
 
-reportForm.addEventListener('submit', (event) => {
-  event.preventDefault();
-  const formData = new FormData(reportForm);
-  reports.unshift({
-    id: Date.now(),
-    title: formData.get('title').trim(),
-    category: formData.get('category'),
-    neighborhood: formData.get('neighborhood').trim(),
-    description: formData.get('description').trim(),
-    status: 'pending',
-    time: 'Agora',
-    mine: true,
-    location: neighborhoodLocations.find((item) =>
-      item.name === formData.get('neighborhood').trim().normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLocaleLowerCase('pt-BR')
-    )?.location || [-23.2645, -47.2992]
-  });
+document.getElementById('use-current-location').addEventListener('click', () => {
+  const locationStatus = document.getElementById('location-status');
+  if (!navigator.geolocation) {
+    locationStatus.textContent = 'Este navegador não disponibiliza geolocalização.';
+    return;
+  }
 
-  closeReportDialog();
-  showMine = false;
-  setActiveFilter('all');
-  updateStats();
-  renderMapMarkers();
-  if (activePage === 'reports') renderReports();
-  Swal.fire({
-    icon: 'success',
-    title: 'Relato registrado!',
-    text: 'Sua ocorrência foi adicionada à lista demonstrativa.',
-    confirmButtonColor: '#2563eb'
-  });
+  locationStatus.textContent = 'Obtendo localização...';
+  navigator.geolocation.getCurrentPosition(
+    ({ coords }) => {
+      document.getElementById('report-latitude').value = coords.latitude;
+      document.getElementById('report-longitude').value = coords.longitude;
+      locationStatus.textContent = 'Localização adicionada. Ela ficará visível no mapa público.';
+    },
+    (error) => {
+      locationStatus.textContent = error.code === error.PERMISSION_DENIED
+        ? 'Permissão de localização negada. Você ainda pode enviar o relato sem marcador.'
+        : 'Não foi possível obter a localização. Você ainda pode enviar o relato sem marcador.';
+    },
+    { enableHighAccuracy: false, timeout: 10000, maximumAge: 60000 }
+  );
+});
+
+reportForm.addEventListener('submit', async (event) => {
+  event.preventDefault();
+  const submitButton = reportForm.querySelector('[type="submit"]');
+  submitButton.disabled = true;
+  const formData = new FormData(reportForm);
+  const latitudeValue = formData.get('latitude');
+  const longitudeValue = formData.get('longitude');
+  try {
+    const { error } = await supabaseClient.from('ocorrencias').insert({
+      user_id: currentUser.id,
+      title: formData.get('title').trim(),
+      description: formData.get('description').trim(),
+      category: formData.get('category'),
+      neighborhood: formData.get('neighborhood').trim(),
+      status: 'pending',
+      latitude: latitudeValue ? Number(latitudeValue) : null,
+      longitude: longitudeValue ? Number(longitudeValue) : null
+    });
+
+    if (error) {
+      showDatabaseError(error, 'Não foi possível registrar a ocorrência');
+      return;
+    }
+
+    closeReportDialog();
+    await loadReports();
+    Swal.fire({
+      icon: 'success',
+      title: 'Relato registrado!',
+      text: 'Sua ocorrência foi salva e já está disponível para a comunidade.',
+      confirmButtonColor: '#d7ff00'
+    });
+  } catch (error) {
+    showDatabaseError(error, 'Não foi possível registrar a ocorrência');
+  } finally {
+    submitButton.disabled = false;
+  }
 });
 
 document.getElementById('notifications-button').addEventListener('click', () => {
   Swal.fire({
     icon: 'info',
-    title: 'Tudo em dia!',
-    text: 'Não há novas notificações neste protótipo.',
-    confirmButtonColor: '#2563eb'
+    title: 'Notificações',
+    text: 'As notificações serão adicionadas em uma próxima etapa.',
+    confirmButtonColor: '#d7ff00'
   });
 });
 
-document.getElementById('logout-button').addEventListener('click', () => {
-  Swal.fire({
+document.getElementById('logout-button').addEventListener('click', async () => {
+  const result = await Swal.fire({
     icon: 'question',
     title: 'Deseja sair?',
     text: 'Você voltará para a tela de entrada.',
     showCancelButton: true,
     confirmButtonText: 'Sair',
     cancelButtonText: 'Continuar no painel',
-    confirmButtonColor: '#2563eb',
+    confirmButtonColor: '#d7ff00',
     cancelButtonColor: '#64748b'
-  }).then((result) => {
-    if (result.isConfirmed) window.location.href = 'index.html';
   });
+  if (!result.isConfirmed) return;
+
+  const { error } = await supabaseClient.auth.signOut();
+  if (error) {
+    showDatabaseError(error, 'Não foi possível encerrar a sessão');
+    return;
+  }
+  window.location.href = 'index.html';
 });
 
-updateStats();
-renderReports();
+async function initializeDashboard() {
+  document.getElementById('connection-status').textContent = 'Conectando...';
+  const { data, error } = await supabaseClient.auth.getSession();
+  if (error) {
+    showDatabaseError(error, 'Não foi possível verificar sua sessão');
+    window.location.href = 'index.html';
+    return;
+  }
+  if (!data.session) {
+    window.location.href = 'index.html';
+    return;
+  }
+
+  currentUser = data.session.user;
+  document.querySelector('.topbar-avatar').textContent = (currentUser.email || 'U').charAt(0).toUpperCase();
+  document.getElementById('connection-status').textContent = 'Conectado';
+
+  try {
+    await loadReports();
+  } catch (errorLoadingReports) {
+    showDatabaseError(errorLoadingReports);
+  }
+}
+
 switchPage('map');
+initializeDashboard().catch((error) => showDatabaseError(error, 'Não foi possível iniciar o painel'));
 window.addEventListener('load', () => map.invalidateSize());

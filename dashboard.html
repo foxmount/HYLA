@@ -55,7 +55,7 @@
           <span class="topbar-location"><i data-lucide="map-pin" class="h-3.5 w-3.5"></i> Itu, SP</span>
         </div>
         <div class="topbar-actions">
-          <span class="topbar-updated"><span class="status-pulse"></span>Dados demonstrativos</span>
+          <span class="topbar-updated"><span class="status-pulse"></span><span id="connection-status">Conectando...</span></span>
           <span class="topbar-avatar" aria-label="Morador">M</span>
           <button type="button" data-open-report class="topbar-report"><i data-lucide="plus" class="h-4 w-4"></i><span>Relatar problema</span></button>
         </div>
@@ -103,13 +103,9 @@
           </section>
           <section class="dashboard-lower-grid">
             <article class="dashboard-panel">
-              <div class="panel-heading"><div><h2>Atividade recente</h2><p>Atualizações da comunidade</p></div><i data-lucide="activity" class="h-5 w-5"></i></div>
-              <div class="activity-list">
-                <div><span class="activity-icon is-progress"><i data-lucide="wrench" class="h-4 w-4"></i></span><p><strong>Iluminação na Rua Santa Rita</strong> está em andamento.<small>Há 2 horas · Centro</small></p></div>
-                <div><span class="activity-icon is-resolved"><i data-lucide="check" class="h-4 w-4"></i></span><p><strong>Coleta de resíduos na Rua Sorocaba</strong> foi resolvida.<small>Ontem · Vila Nova</small></p></div>
-                <div><span class="activity-icon is-new"><i data-lucide="plus" class="h-4 w-4"></i></span><p>Uma nova ocorrência de <strong>buraco na via</strong> foi registrada.<small>Ontem · Jardim Paraíso</small></p></div>
-              </div>
-              <p class="panel-footnote">Informações demonstrativas para apresentação do projeto.</p>
+              <div class="panel-heading">              <div><h2>Últimas ocorrências</h2><p>Relatos mais recentes da comunidade</p></div><i data-lucide="activity" class="h-5 w-5"></i></div>
+              <div id="recent-reports" class="activity-list"></div>
+              <p class="panel-footnote">Informações carregadas do banco de dados do HYLA.</p>
             </article>
             <button type="button" data-page-target="map" class="map-preview-card">
               <span class="map-preview-icon"><i data-lucide="map" class="h-6 w-6"></i></span>
@@ -146,6 +142,7 @@
             </label>
             <span class="map-toolbar-divider"></span>
             <span class="map-result-count"><i data-lucide="map-pinned" class="h-4 w-4"></i><strong id="map-count">0</strong><span>no mapa</span></span>
+            <span id="map-unlocated" class="map-unlocated hidden"></span>
             <span class="map-help">Arraste para mover · scroll para zoom</span>
           </div>
         </section>
@@ -221,10 +218,19 @@
           </div>
         </div>
         <div>
+          <input id="report-latitude" name="latitude" type="hidden">
+          <input id="report-longitude" name="longitude" type="hidden">
+          <button id="use-current-location" type="button" class="inline-flex items-center gap-2 rounded-lg border border-slate-300 px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50">
+            <i data-lucide="map-pin" class="h-4 w-4"></i>
+            Usar minha localização (opcional)
+          </button>
+          <p id="location-status" class="mt-1.5 text-xs text-slate-500">Sem localização precisa, o relato aparece na lista, mas não recebe marcador no mapa.</p>
+        </div>
+        <div>
           <label for="report-description" class="mb-1.5 block text-sm font-medium text-slate-700">Descrição</label>
           <textarea id="report-description" name="description" required maxlength="500" rows="3" placeholder="Descreva brevemente o problema e sua localização." class="w-full rounded-lg border border-slate-300 px-3 py-2.5 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"></textarea>
         </div>
-        <p class="rounded-lg bg-amber-50 px-3 py-2 text-xs leading-5 text-amber-800">Este protótipo mantém o novo relato somente enquanto a página estiver aberta. O envio ao Supabase será integrado posteriormente.</p>
+        <p class="rounded-lg bg-amber-50 px-3 py-2 text-xs leading-5 text-amber-800">Os relatos e, se você autorizar, suas coordenadas ficam visíveis publicamente. Não inclua dados pessoais no relato.</p>
       </div>
       <div class="flex justify-end gap-3 border-t border-slate-100 bg-slate-50 px-6 py-4">
         <button id="cancel-report" type="button" class="rounded-lg px-4 py-2.5 text-sm font-semibold text-slate-600 hover:bg-slate-200">Cancelar</button>
@@ -236,6 +242,8 @@
     </form>
   </dialog>
 
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/supabase.js"></script>
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script src="js/dashboard.js"></script>
 </body>

@@ -1,57 +1,100 @@
-// Controle de Alternância entre as abas de Login e Cadastro na tela index.html
 const tabLogin = document.getElementById('tab-login');
 const tabRegister = document.getElementById('tab-register');
 const formLogin = document.getElementById('form-login');
 const formRegister = document.getElementById('form-register');
+const supabaseClient = window.hylaSupabase;
 
-if (tabLogin && tabRegister) {
-  tabLogin.addEventListener('click', () => {
-    tabLogin.classList.add('text-blue-600', 'border-b-2', 'border-blue-600');
-    tabLogin.classList.remove('text-slate-400');
-    tabRegister.classList.add('text-slate-400');
-    tabRegister.classList.remove('text-emerald-600', 'border-b-2', 'border-emerald-600');
-    
-    formLogin.classList.remove('hidden');
-    formRegister.classList.add('hidden');
-  });
-
-  tabRegister.addEventListener('click', () => {
-    tabRegister.classList.add('text-emerald-600', 'border-b-2', 'border-emerald-600');
-    tabRegister.classList.remove('text-slate-400');
-    tabLogin.classList.add('text-slate-400');
-    tabLogin.classList.remove('text-blue-600', 'border-b-2', 'border-blue-600');
-    
-    formRegister.classList.remove('hidden');
-    formLogin.classList.add('hidden');
+function showAuthError(error) {
+  Swal.fire({
+    icon: 'error',
+    title: 'Não foi possível continuar',
+    text: error.message || 'Ocorreu um erro ao conectar com o Supabase.',
+    confirmButtonColor: '#2563eb'
   });
 }
 
-// Simulação de Login e Cadastro (para testar o Front-end sem o Supabase ativo)
-if (formLogin) {
-  formLogin.addEventListener('submit', (e) => {
-    e.preventDefault();
-    Swal.fire({
-      icon: 'success',
-      title: 'Login simulado com sucesso!',
-      text: 'Redirecionando para o painel...',
-      timer: 1500,
-      showConfirmButton: false
-    }).then(() => {
+function switchAuthTab(activeTab) {
+  const isLogin = activeTab === 'login';
+  tabLogin.classList.toggle('text-blue-600', isLogin);
+  tabLogin.classList.toggle('border-b-2', isLogin);
+  tabLogin.classList.toggle('border-blue-600', isLogin);
+  tabLogin.classList.toggle('text-slate-400', !isLogin);
+  tabRegister.classList.toggle('text-emerald-600', !isLogin);
+  tabRegister.classList.toggle('border-b-2', !isLogin);
+  tabRegister.classList.toggle('border-emerald-600', !isLogin);
+  tabRegister.classList.toggle('text-slate-400', isLogin);
+  formLogin.classList.toggle('hidden', !isLogin);
+  formRegister.classList.toggle('hidden', isLogin);
+}
+
+tabLogin.addEventListener('click', () => switchAuthTab('login'));
+tabRegister.addEventListener('click', () => switchAuthTab('register'));
+
+formLogin.addEventListener('submit', async (event) => {
+  event.preventDefault();
+  const button = formLogin.querySelector('[type="submit"]');
+  button.disabled = true;
+
+  try {
+    const { error } = await supabaseClient.auth.signInWithPassword({
+      email: document.getElementById('login-email').value.trim(),
+      password: document.getElementById('login-password').value
+    });
+
+    if (error) {
+      showAuthError(error);
+      return;
+    }
+    window.location.href = 'dashboard.html';
+  } catch (error) {
+    showAuthError(error);
+  } finally {
+    button.disabled = false;
+  }
+});
+
+formRegister.addEventListener('submit', async (event) => {
+  event.preventDefault();
+  const button = formRegister.querySelector('[type="submit"]');
+  button.disabled = true;
+
+  try {
+    const { data, error } = await supabaseClient.auth.signUp({
+      email: document.getElementById('register-email').value.trim(),
+      password: document.getElementById('register-password').value,
+      options: {
+        emailRedirectTo: new URL('index.html', window.location.href).href
+      }
+    });
+
+    if (error) {
+      showAuthError(error);
+      return;
+    }
+
+    if (data.session) {
       window.location.href = 'dashboard.html';
-    });
-  });
-}
+      return;
+    }
 
-if (formRegister) {
-  formRegister.addEventListener('submit', (e) => {
-    e.preventDefault();
-    Swal.fire({
+    await Swal.fire({
       icon: 'success',
-      title: 'Conta criada com sucesso!',
-      text: 'Agora você já pode fazer o login.',
-      timer: 2000,
-      showConfirmButton: false
+      title: 'Confira seu e-mail',
+      text: 'Enviamos um link de confirmação para ativar sua conta.',
+      confirmButtonColor: '#2563eb'
     });
-    tabLogin.click();
-  });
-}
+    switchAuthTab('login');
+  } catch (error) {
+    showAuthError(error);
+  } finally {
+    button.disabled = false;
+  }
+});
+
+supabaseClient.auth.getSession().then(({ data, error }) => {
+  if (error) {
+    showAuthError(error);
+    return;
+  }
+  if (data.session) window.location.href = 'dashboard.html';
+}).catch(showAuthError);
