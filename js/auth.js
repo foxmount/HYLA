@@ -9,22 +9,22 @@ function showAuthError(error) {
     icon: 'error',
     title: 'Não foi possível continuar',
     text: error.message || 'Ocorreu um erro ao conectar com o Supabase.',
-    confirmButtonColor: '#2563eb'
+    confirmButtonColor: '#d7ff00'
   });
 }
 
 function switchAuthTab(activeTab) {
   const isLogin = activeTab === 'login';
-  tabLogin.classList.toggle('text-blue-600', isLogin);
-  tabLogin.classList.toggle('border-b-2', isLogin);
-  tabLogin.classList.toggle('border-blue-600', isLogin);
-  tabLogin.classList.toggle('text-slate-400', !isLogin);
-  tabRegister.classList.toggle('text-emerald-600', !isLogin);
-  tabRegister.classList.toggle('border-b-2', !isLogin);
-  tabRegister.classList.toggle('border-emerald-600', !isLogin);
-  tabRegister.classList.toggle('text-slate-400', isLogin);
+  tabLogin.classList.toggle('is-active', isLogin);
+  tabLogin.setAttribute('aria-selected', String(isLogin));
+  tabRegister.classList.toggle('is-active', !isLogin);
+  tabRegister.setAttribute('aria-selected', String(!isLogin));
   formLogin.classList.toggle('hidden', !isLogin);
   formRegister.classList.toggle('hidden', isLogin);
+  document.getElementById('auth-heading').textContent = isLogin ? 'Acesse sua conta' : 'Faça parte do HYLA';
+  document.getElementById('auth-description').textContent = isLogin
+    ? 'Entre para acompanhar sua comunidade.'
+    : 'Crie sua conta e ajude a transformar sua cidade.';
 }
 
 tabLogin.addEventListener('click', () => switchAuthTab('login'));
@@ -81,7 +81,7 @@ formRegister.addEventListener('submit', async (event) => {
       icon: 'success',
       title: 'Confira seu e-mail',
       text: 'Enviamos um link de confirmação para ativar sua conta.',
-      confirmButtonColor: '#2563eb'
+      confirmButtonColor: '#d7ff00'
     });
     switchAuthTab('login');
   } catch (error) {

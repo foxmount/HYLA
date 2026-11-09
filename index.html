@@ -3,80 +3,94 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>HYLA - Entrar ou Cadastrar</title>
-  
-  <!-- Tailwind CSS CDN -->
+  <meta name="theme-color" content="#090b0a">
+  <meta name="description" content="Entre no HYLA — Cidade em Foco e acompanhe as melhorias da sua cidade.">
+  <title>Entrar | HYLA — Cidade em Foco</title>
+
   <script src="https://cdn.tailwindcss.com"></script>
-  
-  <!-- Lucide Icons -->
   <script src="https://unpkg.com/lucide@latest"></script>
-  
-  <!-- SweetAlert2 -->
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-  
+  <link rel="stylesheet" href="css/auth.css">
 </head>
-<body class="bg-slate-100 min-h-screen flex items-center justify-center p-4">
+<body class="auth-page">
+  <div class="auth-grid" aria-hidden="true"></div>
+  <div class="auth-glow auth-glow-one" aria-hidden="true"></div>
+  <div class="auth-glow auth-glow-two" aria-hidden="true"></div>
 
-  <div class="bg-white p-8 rounded-xl shadow-md w-full max-w-md">
-    <!-- Header/Logo -->
-    <div class="text-center mb-6">
-      <div class="flex justify-center items-center gap-2 mb-2">
-        <i data-lucide="map-pin" class="w-8 h-8 text-blue-600"></i>
-        <h1 class="text-3xl font-bold text-slate-800">HYLA</h1>
-      </div>
-      <p class="text-slate-500 text-sm">Cidade em Foco — Gestão Urbana Comunitária</p>
-    </div>
+  <main class="auth-shell">
+    <section class="auth-story" aria-label="Sobre o HYLA">
+      <a class="brand-lockup" href="index.html" aria-label="HYLA Cidade em Foco">
+        <span class="brand-mark"><i data-lucide="map-pin" class="h-5 w-5"></i></span>
+        <span class="brand-name">HYLA<span class="brand-period">.</span></span>
+      </a>
 
-    <!-- Abas Alternar Login / Cadastro -->
-    <div class="flex border-b mb-6">
-      <button id="tab-login" class="flex-1 py-2 font-semibold text-blue-600 border-b-2 border-blue-600 focus:outline-none">
-        Login
-      </button>
-      <button id="tab-register" class="flex-1 py-2 font-semibold text-slate-400 hover:text-slate-600 focus:outline-none">
-        Cadastro
-      </button>
-    </div>
+      <div class="story-content">
+        <div class="story-kicker"><span></span> CIDADE EM FOCO / ITU</div>
+        <h1>A cidade muda<br>quando a gente <span>participa.</span></h1>
+        <p>Registre problemas urbanos, acompanhe cada atualização e ajude a construir uma cidade melhor.</p>
 
-    <!-- Formulário de Login -->
-    <form id="form-login" class="space-y-4">
-      <div>
-        <label class="block text-sm font-medium text-slate-700 mb-1">E-mail</label>
-        <input type="email" id="login-email" required placeholder="seu@email.com" class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none">
+        <div class="story-points">
+          <div><span class="point-icon"><i data-lucide="map" class="h-4 w-4"></i></span><span>Veja o que acontece perto de você</span></div>
+          <div><span class="point-icon"><i data-lucide="message-square-plus" class="h-4 w-4"></i></span><span>Registre problemas do seu bairro</span></div>
+          <div><span class="point-icon"><i data-lucide="chart-no-axes-column-increasing" class="h-4 w-4"></i></span><span>Acompanhe as melhorias em andamento</span></div>
+        </div>
       </div>
-      <div>
-        <label class="block text-sm font-medium text-slate-700 mb-1">Senha</label>
-        <input type="password" id="login-password" required placeholder="••••••••" class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none">
-      </div>
-      <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 rounded-lg transition duration-200">
-        Entrar
-      </button>
-    </form>
 
-    <!-- Formulário de Cadastro (Inicia Escondido) -->
-    <form id="form-register" class="space-y-4 hidden">
-      <div>
-        <label class="block text-sm font-medium text-slate-700 mb-1">E-mail</label>
-        <input type="email" id="register-email" required placeholder="seu@email.com" class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none">
+      <div class="story-footer">
+        <span class="footer-pulse"></span>
+        <span>Projeto acadêmico · FATEC Itu</span>
+        <span class="footer-divider">/</span>
+        <span>Gestão urbana comunitária</span>
       </div>
-      <div>
-        <label class="block text-sm font-medium text-slate-700 mb-1">Senha</label>
-        <input type="password" id="register-password" required placeholder="••••••••" class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none">
-      </div>
-      <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2 rounded-lg transition duration-200">
-        Criar Conta
-      </button>
-    </form>
-  </div>
+    </section>
 
-  <!-- CDN do Supabase JS -->
+    <section class="auth-form-side" aria-label="Acesso à plataforma">
+      <div class="auth-card">
+        <div class="card-heading">
+          <span class="card-eyebrow">BEM-VINDO AO HYLA</span>
+          <h2 id="auth-heading">Acesse sua conta</h2>
+          <p id="auth-description">Entre para acompanhar sua comunidade.</p>
+        </div>
+
+        <div class="auth-tabs" role="tablist" aria-label="Acesso à conta">
+          <button id="tab-login" type="button" class="auth-tab is-active" role="tab" aria-selected="true" aria-controls="form-login">Entrar</button>
+          <button id="tab-register" type="button" class="auth-tab" role="tab" aria-selected="false" aria-controls="form-register">Criar conta</button>
+        </div>
+
+        <form id="form-login" class="auth-form" role="tabpanel" aria-labelledby="tab-login">
+          <label class="auth-field" for="login-email">
+            <span>E-mail</span>
+            <span class="input-wrap"><i data-lucide="mail" class="h-4 w-4"></i><input type="email" id="login-email" name="email" required autocomplete="email" placeholder="voce@email.com"></span>
+          </label>
+          <label class="auth-field" for="login-password">
+            <span>Senha</span>
+            <span class="input-wrap"><i data-lucide="lock-keyhole" class="h-4 w-4"></i><input type="password" id="login-password" name="password" required autocomplete="current-password" placeholder="Sua senha"></span>
+          </label>
+          <button type="submit" class="auth-submit"><span>Entrar na plataforma</span><i data-lucide="arrow-up-right" class="h-4 w-4"></i></button>
+        </form>
+
+        <form id="form-register" class="auth-form hidden" role="tabpanel" aria-labelledby="tab-register">
+          <label class="auth-field" for="register-email">
+            <span>E-mail</span>
+            <span class="input-wrap"><i data-lucide="mail" class="h-4 w-4"></i><input type="email" id="register-email" name="email" required autocomplete="email" placeholder="voce@email.com"></span>
+          </label>
+          <label class="auth-field" for="register-password">
+            <span>Crie uma senha</span>
+            <span class="input-wrap"><i data-lucide="lock-keyhole" class="h-4 w-4"></i><input type="password" id="register-password" name="password" required minlength="6" autocomplete="new-password" placeholder="Mínimo de 6 caracteres"></span>
+          </label>
+          <button type="submit" class="auth-submit"><span>Criar minha conta</span><i data-lucide="arrow-up-right" class="h-4 w-4"></i></button>
+        </form>
+
+        <div class="auth-divider"><span></span><i data-lucide="map-pin" class="h-3.5 w-3.5"></i><span></span></div>
+        <p class="privacy-note"><i data-lucide="shield-check" class="h-3.5 w-3.5"></i> Seus dados de acesso são protegidos.</p>
+      </div>
+      <p class="mobile-footer">HYLA — Cidade em Foco · FATEC Itu</p>
+    </section>
+  </main>
+
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <!-- Scripts do Projeto -->
   <script src="js/supabase.js"></script>
   <script src="js/auth.js"></script>
-  
-  <script>
-    // Inicializa os ícones do Lucide
-    lucide.createIcons();
-  </script>
+  <script>lucide.createIcons();</script>
 </body>
 </html>
