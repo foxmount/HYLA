@@ -91,7 +91,7 @@
 }
 
 .brand-lockup { display: inline-flex; width: fit-content; align-items: center; gap: 10px; text-decoration: none; }
-.brand-mark { display: grid; width: 34px; height: 34px; place-items: center; border: 1px solid rgb(215 255 0 / 30%); border-radius: 10px; color: var(--auth-neon); background: var(--auth-neon-soft); }
+.brand-mark { display: block; width: 36px; height: 36px; border-radius: 11px; }
 .brand-name { color: var(--auth-text); font-size: 19px; font-weight: 750; letter-spacing: -.06em; }
 .brand-period { color: var(--auth-neon); }
 

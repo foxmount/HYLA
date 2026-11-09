@@ -310,6 +310,11 @@
   cursor: pointer;
 }
 
+.hyla-dashboard .rail-logo-mark {
+  width: 30px;
+  height: 30px;
+}
+
 .hyla-dashboard .rail-nav,
 .hyla-dashboard .rail-bottom {
   display: flex;
@@ -407,7 +412,9 @@
   font-size: 12px;
 }
 
-.hyla-dashboard .topbar-brand { color: #f0f2ed; font-weight: 700; }
+.hyla-dashboard .topbar-brand { display: inline-flex; align-items: center; gap: 6px; color: #f0f2ed; font-weight: 700; }
+.hyla-dashboard .topbar-brand img { width: 22px; height: 22px; }
+.hyla-dashboard .topbar-brand > span { margin-left: -6px; color: var(--hyla-neon); }
 .hyla-dashboard .topbar-separator { color: #4b534c; }
 .hyla-dashboard .topbar-location {
   display: inline-flex;
