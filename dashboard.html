@@ -215,6 +215,7 @@
             <label class="map-select-wrap"><span class="sr-only">Filtrar por categoria no mapa</span>
               <select id="map-category-filter"><option value="all">Todas as categorias</option><option>Buracos</option><option>Lixo</option><option>Iluminação</option><option>Árvores</option><option>Sinalização</option><option>Outros</option></select>
             </label>
+            <label class="archive-toggle"><input id="include-archived-map" type="checkbox"><span>Incluir arquivadas</span></label>
             <span class="map-toolbar-divider"></span>
             <span class="map-result-count"><i data-lucide="map-pinned" class="h-4 w-4"></i><strong id="map-count">0</strong><span>no mapa</span></span>
             <span id="map-unlocated" class="map-unlocated hidden"></span>
@@ -233,7 +234,7 @@
           </div>
           <section id="reports" class="reports-panel">
           <div class="reports-toolbar border-b border-slate-100 px-5 py-5">
-            <h2 class="font-semibold text-slate-900">Todos os relatos</h2>
+            <h2 id="reports-list-title" class="font-semibold text-slate-900">Todos os relatos</h2>
             <label class="relative block sm:w-64">
               <span class="sr-only">Buscar ocorrência</span>
               <i data-lucide="search" class="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400"></i>
@@ -242,6 +243,7 @@
             <label class="map-select-wrap"><span class="sr-only">Filtrar por estado</span><select id="report-state-filter"><option value="all">Todos os estados</option></select></label>
             <label class="map-select-wrap"><span class="sr-only">Filtrar por cidade</span><select id="report-city-filter"><option value="all">Todas as cidades</option></select></label>
             <label class="map-select-wrap"><span class="sr-only">Filtrar por categoria</span><select id="report-category-filter"><option value="all">Todas as categorias</option><option>Buracos</option><option>Lixo</option><option>Iluminação</option><option>Árvores</option><option>Sinalização</option><option>Outros</option></select></label>
+            <label class="archive-toggle"><input id="include-archived-reports" type="checkbox"><span>Incluir arquivadas</span></label>
           </div>
           <div class="flex gap-2 overflow-x-auto border-b border-slate-100 px-5 py-3" aria-label="Filtrar ocorrências">
             <button type="button" data-filter="all" aria-pressed="true" class="shrink-0 rounded-full bg-blue-600 px-3.5 py-1.5 text-xs font-semibold text-white">Todas</button>

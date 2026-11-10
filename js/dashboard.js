@@ -36,6 +36,8 @@ const mapCityFilter = document.getElementById('map-city-filter');
 const mapStateFilter = document.getElementById('map-state-filter');
 const mapStatusFilter = document.getElementById('map-status-filter');
 const mapCategoryFilter = document.getElementById('map-category-filter');
+const includeArchivedMap = document.getElementById('include-archived-map');
+const includeArchivedReports = document.getElementById('include-archived-reports');
 const reportDialog = document.getElementById('report-dialog');
 const reportForm = document.getElementById('report-form');
 const notificationButton = document.getElementById('notifications-button');
@@ -66,6 +68,19 @@ function getPublicReportImageUrl(value) {
     const isDemoIllustration = url.origin === 'https://foxmount.github.io' &&
       url.pathname.startsWith('/HYLA/assets/demo-occurrences/');
     return url.protocol === 'https:' && (isSupabaseImage || isDemoIllustration) ? url.href : null;
+  } catch {
+    return null;
+  }
+}
+
+function getOccurrenceImagePath(value) {
+  const imageUrl = getPublicReportImageUrl(value);
+  if (!imageUrl || !imageUrl.startsWith('https://rnfdliedxxmjakcgkhfc.supabase.co/')) return null;
+
+  const path = new URL(imageUrl).pathname
+    .replace('/storage/v1/object/public/occurrence-images/', '');
+  try {
+    return path.split('/').map(decodeURIComponent).join('/');
   } catch {
     return null;
   }
@@ -118,7 +133,8 @@ function renderReports() {
     const matchesCity = reportCityFilter.value === 'all' || `${report.state}|${report.city}` === reportCityFilter.value;
     const matchesCategory = reportCategoryFilter.value === 'all' || report.category === reportCategoryFilter.value;
     const searchableText = `${report.title} ${report.category} ${report.neighborhood} ${report.city} ${report.state}`.toLocaleLowerCase('pt-BR');
-    return matchesStatus && matchesState && matchesCity && matchesCategory &&
+    return (includeArchivedReports.checked || !report.isArchived) &&
+      matchesStatus && matchesState && matchesCity && matchesCategory &&
       searchableText.includes(searchTerm) && (!showMine || (report.mine && !report.isDemo));
   });
 
@@ -139,10 +155,12 @@ function renderReports() {
           <p class="mt-1 text-xs text-slate-500">${escapeHTML(report.category)} <span class="mx-1 text-slate-300">·</span> ${escapeHTML(report.neighborhood)} <span class="mx-1 text-slate-300">·</span> ${escapeHTML(report.city)} - ${escapeHTML(report.state)} <span class="mx-1 text-slate-300">·</span> ${escapeHTML(report.time)}</p>
         </div>
         ${report.imageUrl ? `<img class="report-list-image" src="${escapeHTML(report.imageUrl)}" alt="Foto: ${escapeHTML(report.title)}" loading="lazy">` : ''}
+        ${report.isArchived ? '<span class="archived-report-badge">Arquivada</span>' : ''}
         <span class="inline-flex w-fit items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium ${status.classes}">
           <i data-lucide="${status.icon}" class="h-3.5 w-3.5"></i>
           ${status.label}
         </span>
+        ${(isAdmin || (report.mine && !report.isDemo)) ? `<button type="button" class="report-delete-button" data-delete-report="${escapeHTML(report.id)}" aria-label="Excluir ocorrência: ${escapeHTML(report.title)}" title="Excluir ocorrência"><i data-lucide="trash-2" class="h-4 w-4"></i></button>` : ''}
       </article>
     `;
   }).join('');
@@ -356,7 +374,8 @@ function renderMapMarkers() {
     const matchesStatus = mapStatusFilter.value === 'all' || report.status === mapStatusFilter.value;
     const matchesCategory = mapCategoryFilter.value === 'all' || report.category === mapCategoryFilter.value;
     const searchableText = `${report.title} ${report.category} ${report.neighborhood} ${report.city} ${report.state}`.toLocaleLowerCase('pt-BR');
-    return matchesState && matchesCity && matchesStatus && matchesCategory && searchableText.includes(searchTerm);
+    return (includeArchivedMap.checked || !report.isArchived) &&
+      matchesState && matchesCity && matchesStatus && matchesCategory && searchableText.includes(searchTerm);
   });
 
   mapMarkers.clearLayers();
@@ -377,13 +396,25 @@ function renderMapMarkers() {
     });
     const marker = L.marker(report.location, { icon: markerIcon });
     marker.bindPopup(`
-      <div class="map-popup">
-        ${report.imageUrl ? `<img class="map-popup-image" src="${escapeHTML(report.imageUrl)}" alt="Foto: ${escapeHTML(report.title)}" loading="lazy">` : ''}
-        <p style="font-size:11px;color:#d7ff00;font-weight:700;text-transform:uppercase;letter-spacing:.08em">${escapeHTML(report.category)}</p>
-        <p style="margin-top:5px;font-weight:700">${escapeHTML(report.title)}</p>
-        <p style="margin-top:4px;font-size:12px;color:#929991">${escapeHTML(report.neighborhood)} · ${escapeHTML(report.city)} - ${escapeHTML(report.state)} · ${status.label}</p>
+      <div class="map-popup-card">
+        ${report.imageUrl ? `<img class="map-popup-image" src="${escapeHTML(report.imageUrl)}" alt="Ilustração da ocorrência: ${escapeHTML(report.title)}" loading="lazy">` : '<div class="map-popup-image-placeholder"><span>HYLA</span><i data-lucide="map-pin" class="h-6 w-6"></i></div>'}
+        <div class="map-popup-content">
+          <div class="map-popup-topline">
+            <span class="map-popup-category">${escapeHTML(report.category)}</span>
+            <span class="map-popup-status map-popup-status-${escapeHTML(report.status)}">${status.label}</span>
+          </div>
+          <h3 class="map-popup-title">${escapeHTML(report.title)}</h3>
+          ${report.description ? `<p class="map-popup-description">${escapeHTML(report.description)}</p>` : ''}
+          <div class="map-popup-location"><i data-lucide="map-pin" class="h-3.5 w-3.5"></i><span>${escapeHTML(report.neighborhood)} · ${escapeHTML(report.city)} - ${escapeHTML(report.state)}</span></div>
+          <div class="map-popup-footer">
+            <span>${escapeHTML(report.time)}</span>
+            ${report.isDemo ? '<span class="map-popup-example">Exemplo</span>' : ''}
+            ${report.isArchived ? '<span class="map-popup-archived">Arquivada</span>' : ''}
+          </div>
+        </div>
       </div>
-    `);
+    `, { maxWidth: 340, minWidth: 270 });
+    marker.on('popupopen', () => lucide.createIcons());
     mapMarkers.addLayer(marker);
   });
 
@@ -480,6 +511,7 @@ function renderAnalytics(visibleReports) {
 
 function getDashboardReports() {
   return reports.filter((report) =>
+    !report.isArchived &&
     (dashboardStateFilter.value === 'all' || report.state === dashboardStateFilter.value) &&
     (dashboardCityFilter.value === 'all' || `${report.state}|${report.city}` === dashboardCityFilter.value) &&
     (dashboardCategoryFilter.value === 'all' || report.category === dashboardCategoryFilter.value)
@@ -518,7 +550,7 @@ function updateDashboardOverview() {
 async function loadReports() {
   const { data, error } = await supabaseClient
     .from('ocorrencias')
-    .select('id,user_id,title,description,category,neighborhood,city,state,status,latitude,longitude,image_url,created_at,is_demo')
+    .select('id,user_id,title,description,category,neighborhood,city,state,status,latitude,longitude,image_url,created_at,resolved_at,is_demo')
     .order('created_at', { ascending: false });
 
   if (error) throw error;
@@ -535,6 +567,8 @@ async function loadReports() {
     state: row.state,
     status: row.status,
     isDemo: row.is_demo,
+    isArchived: row.status === 'resolved' && row.resolved_at !== null &&
+      Date.now() - new Date(row.resolved_at).getTime() >= 30 * 24 * 60 * 60 * 1000,
     time: formatRelativeTime(row.created_at),
     mine: row.user_id === currentUser.id,
     location: row.latitude !== null && row.longitude !== null ? [row.latitude, row.longitude] : null
@@ -569,6 +603,7 @@ function switchPage(page) {
   document.getElementById('page-title').textContent = pageTitles[view];
   if (view === 'reports') {
     document.getElementById('reports-heading').textContent = pageTitles[view];
+    document.getElementById('reports-list-title').textContent = showMine ? 'Seus relatos' : 'Todos os relatos';
     renderReports();
   }
   if (view === 'admin') loadAdminUsers();
@@ -634,7 +669,10 @@ function getSelectedMapLocations() {
     .filter((report) => {
       const matchesState = mapStateFilter.value === 'all' || report.state === mapStateFilter.value;
       const matchesCity = mapCityFilter.value === 'all' || `${report.state}|${report.city}` === mapCityFilter.value;
-      return report.location && matchesState && matchesCity;
+      return report.location &&
+        (includeArchivedMap.checked || !report.isArchived) &&
+        matchesState &&
+        matchesCity;
     })
     .map((report) => report.location);
 }
@@ -651,6 +689,77 @@ mapCityFilter.addEventListener('change', () => {
 mapSearch.addEventListener('input', renderMapMarkers);
 mapStatusFilter.addEventListener('change', renderMapMarkers);
 mapCategoryFilter.addEventListener('change', renderMapMarkers);
+includeArchivedMap.addEventListener('change', renderMapMarkers);
+includeArchivedReports.addEventListener('change', renderReports);
+
+reportList.addEventListener('click', async (event) => {
+  const button = event.target.closest('button[data-delete-report]');
+  if (!button || button.disabled) return;
+
+  const report = reports.find((item) => item.id === button.dataset.deleteReport);
+  if (!report || (!report.mine && !isAdmin)) return;
+
+  const result = await Swal.fire({
+    icon: 'warning',
+    title: 'Excluir esta ocorrência?',
+    text: 'Essa ação é permanente e o relato deixará de aparecer para todos.',
+    showCancelButton: true,
+    confirmButtonText: 'Excluir ocorrência',
+    cancelButtonText: 'Manter ocorrência',
+    confirmButtonColor: '#b4534b',
+    cancelButtonColor: '#64748b'
+  });
+  if (!result.isConfirmed) return;
+
+  button.disabled = true;
+  try {
+    const { data, error } = await supabaseClient
+      .from('ocorrencias')
+      .delete()
+      .eq('id', report.id)
+      .select('id')
+      .maybeSingle();
+    if (error) throw error;
+    if (!data) throw new Error('Você não tem permissão para excluir esta ocorrência.');
+
+    reports.splice(reports.indexOf(report), 1);
+    updateLocationFilters();
+    updateDashboardOverview();
+    renderReports();
+
+    const imagePath = getOccurrenceImagePath(report.imageUrl);
+    if (imagePath) {
+      const { error: imageError } = await supabaseClient.storage
+        .from('occurrence-images')
+        .remove([imagePath]);
+      if (imageError) {
+        console.error('Ocorrência excluída, mas não foi possível remover sua imagem', imageError);
+        await Swal.fire({
+          icon: 'warning',
+          title: 'Relato excluído',
+          text: 'A ocorrência foi removida, mas a imagem não pôde ser apagada do armazenamento.',
+          confirmButtonColor: '#d7ff00'
+        });
+        return;
+      }
+    }
+
+    await Swal.fire({
+      icon: 'success',
+      title: 'Ocorrência excluída',
+      confirmButtonColor: '#d7ff00'
+    });
+  } catch (error) {
+    console.error('Não foi possível excluir a ocorrência', error);
+    await Swal.fire({
+      icon: 'error',
+      title: 'Não foi possível excluir',
+      text: error.message || 'Verifique sua conexão e tente novamente.',
+      confirmButtonColor: '#d7ff00'
+    });
+    button.disabled = false;
+  }
+});
 
 document.querySelectorAll('[data-open-report]').forEach((button) => {
   button.addEventListener('click', () => reportDialog.showModal());
