@@ -266,20 +266,15 @@
           <div class="view-heading">
             <div>
               <p class="eyebrow">HYLA / ACESSO RESTRITO</p>
-              <h1 id="admin-heading">Administração</h1>
+              <div class="admin-heading-row">
+                <h1 id="admin-heading">Administração</h1>
+                <button id="admin-seed-demo" type="button" class="demo-setup-button" aria-label="Preparar dados fictícios para apresentação" title="Preparar demonstração">
+                  <i data-lucide="flask-conical" class="h-4 w-4" aria-hidden="true"></i>
+                </button>
+              </div>
               <p class="view-subtitle">Gerencie contas sem visualizar senhas pessoais.</p>
             </div>
           </div>
-          <section class="demo-setup-panel" aria-labelledby="demo-setup-heading">
-            <div>
-              <h2 id="demo-setup-heading">Dados para apresentação</h2>
-              <p>Prepara três moradores fictícios e seis ocorrências demonstrativas em cidades diferentes. As senhas temporárias serão exibidas após a criação.</p>
-            </div>
-            <button id="admin-seed-demo" type="button" class="demo-setup-button">
-              <i data-lucide="flask-conical" class="h-4 w-4" aria-hidden="true"></i>
-              Preparar demonstração
-            </button>
-          </section>
           <section class="admin-users-panel" aria-labelledby="admin-users-heading">
             <div class="panel-heading">
               <div><h2 id="admin-users-heading">Contas cadastradas</h2><p id="admin-users-count" aria-live="polite">Carregando contas...</p></div>

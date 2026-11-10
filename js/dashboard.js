@@ -575,8 +575,6 @@ function setActiveFilter(filter) {
 
 document.querySelectorAll('[data-filter]').forEach((button) => {
   button.addEventListener('click', () => {
-    showMine = false;
-    document.getElementById('reports-heading').textContent = 'Ocorrências';
     setActiveFilter(button.dataset.filter);
   });
 });
