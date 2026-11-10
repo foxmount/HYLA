@@ -503,13 +503,12 @@ function renderAnalytics(visibleReports) {
     value: visibleReports.filter((report) => report.status === key).length,
     color: `analytics-status-${key}`
   }));
-  const categories = Object.keys(categoryDetails)
+  const categories = [...new Set(visibleReports.map((report) => report.category))]
     .map((category) => ({
       label: category,
       value: visibleReports.filter((report) => report.category === category).length
     }))
-    .filter((entry) => entry.value > 0)
-    .sort((first, second) => second.value - first.value);
+    .sort((first, second) => second.value - first.value || first.label.localeCompare(second.label, 'pt-BR'));
   const regions = new Map();
   visibleReports.forEach((report) => {
     const key = `${report.city} - ${report.state}`;
@@ -536,10 +535,18 @@ function getDashboardReports() {
 
 function updateDashboardOverview() {
   const visibleReports = getDashboardReports();
-  document.getElementById('stat-total').textContent = visibleReports.length;
-  document.getElementById('stat-pending').textContent = visibleReports.filter((report) => report.status === 'pending').length;
-  document.getElementById('stat-progress').textContent = visibleReports.filter((report) => report.status === 'progress').length;
-  document.getElementById('stat-resolved').textContent = visibleReports.filter((report) => report.status === 'resolved').length;
+  const total = visibleReports.length;
+  const pending = visibleReports.filter((report) => report.status === 'pending').length;
+  const progress = visibleReports.filter((report) => report.status === 'progress').length;
+  const resolved = visibleReports.filter((report) => report.status === 'resolved').length;
+  const percentage = (value) => `${total ? Math.round((value / total) * 100) : 0}%`;
+  document.getElementById('stat-total').textContent = total;
+  document.getElementById('stat-pending').textContent = pending;
+  document.getElementById('stat-progress').textContent = progress;
+  document.getElementById('stat-resolved').textContent = resolved;
+  document.getElementById('stat-pending-share').textContent = percentage(pending);
+  document.getElementById('stat-progress-share').textContent = percentage(progress);
+  document.getElementById('stat-resolved-share').textContent = percentage(resolved);
 
   const scopeParts = [];
   if (dashboardCityFilter.value !== 'all') {
@@ -563,6 +570,7 @@ function updateDashboardOverview() {
 
   renderAnalytics(visibleReports);
   renderRecentReports(visibleReports);
+  lucide.createIcons();
 }
 
 function updateCatalogSelects() {

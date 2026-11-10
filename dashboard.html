@@ -97,13 +97,17 @@
 
       <main class="hyla-view-host">
         <section id="view-dashboard" class="app-view dashboard-view hidden" aria-labelledby="dashboard-heading">
-          <div class="view-heading">
+          <div class="view-heading dashboard-heading">
             <div>
-              <p class="eyebrow">HYLA / MONITORAMENTO</p>
+              <p class="eyebrow"><span class="dashboard-live-dot" aria-hidden="true"></span>HYLA / PAINEL DA COMUNIDADE</p>
               <h1 id="dashboard-heading">Visão geral</h1>
-              <p class="view-subtitle">Acompanhe relatos e melhorias em cidades de todo o Brasil.</p>
+              <p class="view-subtitle">Uma visão clara dos problemas relatados e das melhorias em andamento.</p>
             </div>
-            <button type="button" data-open-report class="primary-action"><i data-lucide="plus" class="h-4 w-4"></i>Nova ocorrência</button>
+            <button type="button" data-open-report class="primary-action dashboard-report-action">
+              <i data-lucide="plus" class="h-5 w-5" aria-hidden="true"></i>
+              <span>Nova ocorrência</span>
+              <i data-lucide="arrow-up-right" class="dashboard-action-arrow h-4 w-4" aria-hidden="true"></i>
+            </button>
           </div>
           <section class="dashboard-scope" aria-labelledby="dashboard-scope-heading">
             <div class="dashboard-scope-heading">
@@ -140,50 +144,52 @@
           </section>
           <section class="stats-grid" aria-label="Resumo das ocorrências">
             <article class="metric-cell metric-total">
-              <div class="metric-label"><span aria-hidden="true"></span><h2>Registros</h2></div>
+              <div class="metric-label"><i data-lucide="files" aria-hidden="true"></i><h2>Ocorrências</h2></div>
               <p id="stat-total" class="metric-value">0</p>
-              <p class="metric-note">no recorte atual</p>
+              <p class="metric-note">no recorte selecionado</p>
             </article>
             <article class="metric-cell metric-pending">
-              <div class="metric-label"><span aria-hidden="true"></span><h2>Pendentes</h2></div>
+              <div class="metric-label"><i data-lucide="circle-alert" aria-hidden="true"></i><h2>Pendentes</h2></div>
               <p id="stat-pending" class="metric-value">0</p>
-              <p class="metric-note">aguardando atendimento</p>
+              <p class="metric-note"><span id="stat-pending-share">0%</span> do total · aguardando atendimento</p>
             </article>
             <article class="metric-cell metric-progress">
-              <div class="metric-label"><span aria-hidden="true"></span><h2>Em andamento</h2></div>
+              <div class="metric-label"><i data-lucide="clock-3" aria-hidden="true"></i><h2>Em andamento</h2></div>
               <p id="stat-progress" class="metric-value">0</p>
-              <p class="metric-note">em acompanhamento</p>
+              <p class="metric-note"><span id="stat-progress-share">0%</span> do total · em acompanhamento</p>
             </article>
             <article class="metric-cell metric-resolved">
-              <div class="metric-label"><span aria-hidden="true"></span><h2>Resolvidas</h2></div>
+              <div class="metric-label"><i data-lucide="circle-check" aria-hidden="true"></i><h2>Resolvidas</h2></div>
               <p id="stat-resolved" class="metric-value">0</p>
-              <p class="metric-note">atendimento concluído</p>
+              <p class="metric-note"><span id="stat-resolved-share">0%</span> do total · atendimento concluído</p>
             </article>
           </section>
           <section class="analytics-grid" aria-label="Análises das ocorrências">
             <article class="analytics-panel">
-              <div class="panel-heading"><div><h2 id="status-chart-heading">Por status</h2><p>Etapa de atendimento</p></div><i data-lucide="chart-no-axes-column-increasing" class="h-4 w-4" aria-hidden="true"></i></div>
+              <div class="panel-heading"><div><h2 id="status-chart-heading">Por status</h2><p>Etapa de atendimento</p></div><i data-lucide="chart-no-axes-column-increasing" class="panel-heading-icon" aria-hidden="true"></i></div>
               <div id="status-chart" class="analytics-chart" role="list" aria-labelledby="status-chart-heading" aria-live="polite"></div>
             </article>
             <article class="analytics-panel">
-              <div class="panel-heading"><div><h2 id="category-chart-heading">Por categoria</h2><p>Tipo de ocorrência</p></div><i data-lucide="chart-pie" class="h-4 w-4" aria-hidden="true"></i></div>
+              <div class="panel-heading"><div><h2 id="category-chart-heading">Por categoria</h2><p>Tipo de ocorrência</p></div><i data-lucide="chart-pie" class="panel-heading-icon" aria-hidden="true"></i></div>
               <div id="category-chart" class="analytics-chart" role="list" aria-labelledby="category-chart-heading" aria-live="polite"></div>
             </article>
             <article class="analytics-panel">
-              <div class="panel-heading"><div><h2 id="region-chart-heading">Por município</h2><p>Municípios com mais registros</p></div><i data-lucide="map-pinned" class="h-4 w-4" aria-hidden="true"></i></div>
+              <div class="panel-heading"><div><h2 id="region-chart-heading">Por município</h2><p>Municípios com mais registros</p></div><i data-lucide="map-pinned" class="panel-heading-icon" aria-hidden="true"></i></div>
               <div id="region-chart" class="analytics-chart" role="list" aria-labelledby="region-chart-heading" aria-live="polite"></div>
             </article>
           </section>
           <section class="dashboard-lower-grid">
             <article class="dashboard-panel">
-              <div class="panel-heading"><div><h2>Atividade recente</h2><p>Últimos registros neste recorte</p></div><i data-lucide="activity" class="h-4 w-4" aria-hidden="true"></i></div>
+              <div class="panel-heading"><div><h2>Atividade recente</h2><p>Últimos registros neste recorte</p></div><i data-lucide="activity" class="panel-heading-icon" aria-hidden="true"></i></div>
               <div id="recent-reports" class="activity-list" aria-live="polite"></div>
-              <p class="panel-footnote">Atualizado a partir dos relatos da comunidade.</p>
+              <button type="button" data-page-target="reports" class="dashboard-view-all">
+                Ver todas as ocorrências<i data-lucide="arrow-right" class="h-4 w-4" aria-hidden="true"></i>
+              </button>
             </article>
-            <button type="button" data-page-target="map" class="map-preview-card">
-              <span class="map-preview-icon"><i data-lucide="map" class="h-6 w-6"></i></span>
-              <span><strong>Explorar mapa</strong><small>Veja as ocorrências pelo Brasil</small></span>
-              <i data-lucide="arrow-up-right" class="h-4 w-4"></i>
+            <button type="button" data-page-target="map" class="map-preview-card dashboard-map-card">
+              <span class="dashboard-map-overline"><i data-lucide="map" class="h-4 w-4" aria-hidden="true"></i>MAPA DA COMUNIDADE</span>
+              <span class="dashboard-map-copy"><strong>Problemas reais.<br>Uma cidade em foco.</strong><small>Explore os relatos e veja o que acontece perto de você.</small></span>
+              <span class="dashboard-map-link">Explorar mapa<i data-lucide="arrow-up-right" class="h-4 w-4" aria-hidden="true"></i></span>
             </button>
           </section>
           <footer class="app-footer">HYLA — Cidade em Foco · Projeto acadêmico · FATEC Itu</footer>
