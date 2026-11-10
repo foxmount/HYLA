@@ -1,4 +1,6 @@
 const reports = [];
+const categories = [];
+const places = [];
 
 const statusDetails = {
   pending: { label: 'Pendente', classes: 'bg-red-50 text-red-700', icon: 'circle-alert' },
@@ -38,8 +40,21 @@ const mapStatusFilter = document.getElementById('map-status-filter');
 const mapCategoryFilter = document.getElementById('map-category-filter');
 const includeArchivedMap = document.getElementById('include-archived-map');
 const includeArchivedReports = document.getElementById('include-archived-reports');
+const categoryDialog = document.getElementById('category-dialog');
+const categoryForm = document.getElementById('category-form');
+const categoryIdInput = document.getElementById('category-id');
+const categoryNameInput = document.getElementById('category-name');
+const categoryDescriptionInput = document.getElementById('category-description');
+const categoryList = document.getElementById('categories-list');
+const placeDialog = document.getElementById('place-dialog');
+const placeForm = document.getElementById('place-form');
+const placeIdInput = document.getElementById('place-id');
+const placeList = document.getElementById('places-list');
+const reportCategorySelect = document.getElementById('report-category');
+const reportPlaceSelect = document.getElementById('report-place');
 const reportDialog = document.getElementById('report-dialog');
 const reportForm = document.getElementById('report-form');
+let originalReportImageUrl = null;
 const notificationButton = document.getElementById('notifications-button');
 const profileButton = document.getElementById('profile-button');
 const notificationPanel = document.getElementById('notifications-panel');
@@ -131,7 +146,7 @@ function renderReports() {
     const matchesStatus = activeFilter === 'all' || report.status === activeFilter;
     const matchesState = reportStateFilter.value === 'all' || report.state === reportStateFilter.value;
     const matchesCity = reportCityFilter.value === 'all' || `${report.state}|${report.city}` === reportCityFilter.value;
-    const matchesCategory = reportCategoryFilter.value === 'all' || report.category === reportCategoryFilter.value;
+    const matchesCategory = reportCategoryFilter.value === 'all' || report.categoryId === reportCategoryFilter.value;
     const searchableText = `${report.title} ${report.category} ${report.neighborhood} ${report.city} ${report.state}`.toLocaleLowerCase('pt-BR');
     return (includeArchivedReports.checked || !report.isArchived) &&
       matchesStatus && matchesState && matchesCity && matchesCategory &&
@@ -160,6 +175,7 @@ function renderReports() {
           <i data-lucide="${status.icon}" class="h-3.5 w-3.5"></i>
           ${status.label}
         </span>
+        ${(isAdmin || (report.mine && !report.isDemo)) ? `<button type="button" class="report-edit-button" data-edit-report="${escapeHTML(report.id)}" aria-label="Editar ocorrência: ${escapeHTML(report.title)}" title="Editar ocorrência"><i data-lucide="pencil" class="h-4 w-4"></i></button>` : ''}
         ${(isAdmin || (report.mine && !report.isDemo)) ? `<button type="button" class="report-delete-button" data-delete-report="${escapeHTML(report.id)}" aria-label="Excluir ocorrência: ${escapeHTML(report.title)}" title="Excluir ocorrência"><i data-lucide="trash-2" class="h-4 w-4"></i></button>` : ''}
       </article>
     `;
@@ -372,7 +388,7 @@ function renderMapMarkers() {
     const matchesState = mapStateFilter.value === 'all' || report.state === mapStateFilter.value;
     const matchesCity = mapCityFilter.value === 'all' || `${report.state}|${report.city}` === mapCityFilter.value;
     const matchesStatus = mapStatusFilter.value === 'all' || report.status === mapStatusFilter.value;
-    const matchesCategory = mapCategoryFilter.value === 'all' || report.category === mapCategoryFilter.value;
+    const matchesCategory = mapCategoryFilter.value === 'all' || report.categoryId === mapCategoryFilter.value;
     const searchableText = `${report.title} ${report.category} ${report.neighborhood} ${report.city} ${report.state}`.toLocaleLowerCase('pt-BR');
     return (includeArchivedMap.checked || !report.isArchived) &&
       matchesState && matchesCity && matchesStatus && matchesCategory && searchableText.includes(searchTerm);
@@ -514,7 +530,7 @@ function getDashboardReports() {
     !report.isArchived &&
     (dashboardStateFilter.value === 'all' || report.state === dashboardStateFilter.value) &&
     (dashboardCityFilter.value === 'all' || `${report.state}|${report.city}` === dashboardCityFilter.value) &&
-    (dashboardCategoryFilter.value === 'all' || report.category === dashboardCategoryFilter.value)
+    (dashboardCategoryFilter.value === 'all' || report.categoryId === dashboardCategoryFilter.value)
   );
 }
 
@@ -533,7 +549,9 @@ function updateDashboardOverview() {
   } else {
     scopeParts.push('Brasil inteiro');
   }
-  if (dashboardCategoryFilter.value !== 'all') scopeParts.push(dashboardCategoryFilter.value);
+  if (dashboardCategoryFilter.value !== 'all') {
+    scopeParts.push(dashboardCategoryFilter.selectedOptions[0].textContent);
+  }
   const countLabel = `${visibleReports.length} ${visibleReports.length === 1 ? 'registro' : 'registros'}`;
   document.getElementById('dashboard-filter-summary').textContent = `${scopeParts.join(' · ')} · ${countLabel}`;
   dashboardResetFilters.classList.toggle(
@@ -547,33 +565,358 @@ function updateDashboardOverview() {
   renderRecentReports(visibleReports);
 }
 
+function updateCatalogSelects() {
+  const selectedCategory = reportCategorySelect.value;
+  const filterSelections = new Map([
+    [reportCategoryFilter, reportCategoryFilter.value],
+    [mapCategoryFilter, mapCategoryFilter.value],
+    [dashboardCategoryFilter, dashboardCategoryFilter.value]
+  ]);
+  reportCategorySelect.replaceChildren(new Option('Selecione uma categoria', ''));
+  categories.forEach((category) => reportCategorySelect.add(new Option(category.name, category.id)));
+  reportCategorySelect.value = categories.some((category) => category.id === selectedCategory)
+    ? selectedCategory
+    : '';
+
+  filterSelections.forEach((selectedValue, select) => {
+    select.replaceChildren(new Option('Todas as categorias', 'all'));
+    categories.forEach((category) => select.add(new Option(category.name, category.id)));
+    select.value = categories.some((category) => category.id === selectedValue)
+      ? selectedValue
+      : 'all';
+  });
+
+  const selectedPlace = reportPlaceSelect.value;
+  reportPlaceSelect.replaceChildren(new Option('Selecione um local', ''));
+  places.forEach((place) => reportPlaceSelect.add(new Option(
+    `${place.neighborhood} · ${place.city} - ${place.state}`,
+    place.id
+  )));
+  reportPlaceSelect.value = places.some((place) => place.id === selectedPlace) ? selectedPlace : '';
+  document.getElementById('report-place-hint').textContent = places.length
+    ? 'Selecione o bairro relacionado à ocorrência.'
+    : 'Cadastre primeiro um bairro na seção Locais para usá-lo em um relato.';
+}
+
+function renderCatalogs() {
+  const categoryUsage = new Map();
+  const placeUsage = new Map();
+  reports.forEach((report) => {
+    if (report.categoryId) categoryUsage.set(report.categoryId, (categoryUsage.get(report.categoryId) || 0) + 1);
+    if (report.placeId) placeUsage.set(report.placeId, (placeUsage.get(report.placeId) || 0) + 1);
+  });
+
+  document.getElementById('categories-count').textContent =
+    `${categories.length} ${categories.length === 1 ? 'categoria disponível' : 'categorias disponíveis'}`;
+  categoryList.innerHTML = categories.map((category) => {
+    const canManage = category.createdBy === currentUser.id || (category.createdBy === null && isAdmin);
+    const usage = categoryUsage.get(category.id) || 0;
+    return `
+      <article class="catalog-card">
+        <span class="catalog-card-icon"><i data-lucide="${categoryDetails[category.name]?.icon || 'tag'}" class="h-5 w-5"></i></span>
+        <div class="catalog-card-copy">
+          <div class="catalog-card-title-row"><h3>${escapeHTML(category.name)}</h3>${category.createdBy === null ? '<span class="catalog-shared-badge">Compartilhada</span>' : ''}</div>
+          <p>${escapeHTML(category.description || 'Sem descrição adicional.')}</p>
+          <small>${usage} ${usage === 1 ? 'ocorrência vinculada' : 'ocorrências vinculadas'}</small>
+        </div>
+        ${canManage ? `<div class="catalog-actions"><button type="button" class="catalog-action" data-edit-category="${escapeHTML(category.id)}" aria-label="Editar categoria ${escapeHTML(category.name)}" title="Editar"><i data-lucide="pencil" class="h-4 w-4"></i></button><button type="button" class="catalog-action is-danger" data-delete-category="${escapeHTML(category.id)}" aria-label="Excluir categoria ${escapeHTML(category.name)}" title="Excluir"><i data-lucide="trash-2" class="h-4 w-4"></i></button></div>` : ''}
+      </article>
+    `;
+  }).join('') || '<p class="catalog-empty">Nenhuma categoria cadastrada.</p>';
+
+  document.getElementById('places-count').textContent =
+    `${places.length} ${places.length === 1 ? 'local disponível' : 'locais disponíveis'}`;
+  document.getElementById('places-list').innerHTML = places.map((place) => {
+    const canManage = place.createdBy === currentUser.id || (place.createdBy === null && isAdmin);
+    const usage = placeUsage.get(place.id) || 0;
+    const stateName = new Intl.DisplayNames(['pt-BR'], { type: 'region' }).of(place.state) || place.state;
+    const hasCoordinates = place.latitude !== null && place.longitude !== null;
+    return `
+      <article class="catalog-card">
+        <span class="catalog-card-icon"><i data-lucide="map-pin" class="h-5 w-5"></i></span>
+        <div class="catalog-card-copy">
+          <div class="catalog-card-title-row"><h3>${escapeHTML(place.neighborhood)}</h3>${place.createdBy === null ? '<span class="catalog-shared-badge">Compartilhado</span>' : ''}</div>
+          <p>${escapeHTML(place.city)} · ${escapeHTML(stateName)} (${escapeHTML(place.state)})</p>
+          <small>${usage} ${usage === 1 ? 'ocorrência vinculada' : 'ocorrências vinculadas'} · ${hasCoordinates ? 'Localização no mapa' : 'Sem coordenadas'}</small>
+        </div>
+        ${canManage ? `<div class="catalog-actions"><button type="button" class="catalog-action" data-edit-place="${escapeHTML(place.id)}" aria-label="Editar local ${escapeHTML(place.neighborhood)}" title="Editar"><i data-lucide="pencil" class="h-4 w-4"></i></button><button type="button" class="catalog-action is-danger" data-delete-place="${escapeHTML(place.id)}" aria-label="Excluir local ${escapeHTML(place.neighborhood)}" title="Excluir"><i data-lucide="trash-2" class="h-4 w-4"></i></button></div>` : ''}
+      </article>
+    `;
+  }).join('') || '<p class="catalog-empty">Nenhum local cadastrado.</p>';
+
+  updateCatalogSelects();
+  lucide.createIcons();
+}
+
+async function loadCatalogs() {
+  const [categoryResult, placeResult] = await Promise.all([
+    supabaseClient.from('hyla_categories').select('id,created_by,name,description,created_at').order('name'),
+    supabaseClient.from('hyla_places').select('id,created_by,neighborhood,city,state,latitude,longitude,created_at').order('state').order('city').order('neighborhood')
+  ]);
+  if (categoryResult.error) throw categoryResult.error;
+  if (placeResult.error) throw placeResult.error;
+
+  categories.splice(0, categories.length, ...categoryResult.data.map((row) => ({
+    id: row.id,
+    createdBy: row.created_by,
+    name: row.name,
+    description: row.description,
+    createdAt: row.created_at
+  })));
+  places.splice(0, places.length, ...placeResult.data.map((row) => ({
+    id: row.id,
+    createdBy: row.created_by,
+    neighborhood: row.neighborhood,
+    city: row.city,
+    state: row.state,
+    latitude: row.latitude,
+    longitude: row.longitude,
+    createdAt: row.created_at
+  })));
+  renderCatalogs();
+}
+
+function openCategoryDialog(category = null) {
+  categoryForm.reset();
+  categoryIdInput.value = category?.id || '';
+  categoryNameInput.value = category?.name || '';
+  categoryDescriptionInput.value = category?.description || '';
+  document.getElementById('category-dialog-title').textContent =
+    category ? 'Editar categoria' : 'Nova categoria';
+  categoryDialog.showModal();
+}
+
+function openPlaceDialog(place = null) {
+  placeForm.reset();
+  placeIdInput.value = place?.id || '';
+  document.getElementById('place-neighborhood').value = place?.neighborhood || '';
+  document.getElementById('place-city').value = place?.city || '';
+  document.getElementById('place-state').value = place?.state || '';
+  document.getElementById('place-latitude').value = place?.latitude ?? '';
+  document.getElementById('place-longitude').value = place?.longitude ?? '';
+  document.getElementById('place-dialog-title').textContent =
+    place ? 'Editar local' : 'Novo local';
+  placeDialog.showModal();
+}
+
+async function saveCatalogRecord(dialog, button, request, successTitle) {
+  button.disabled = true;
+  let saved = false;
+  try {
+    const { data, error } = await request();
+    if (error) throw error;
+    if (!data) throw new Error('O cadastro não foi atualizado. Verifique suas permissões.');
+    saved = true;
+    dialog.close();
+    try {
+      await loadCatalogs();
+      await loadReports();
+    } catch (refreshError) {
+      console.error('Cadastro salvo, mas as listas não puderam ser atualizadas', refreshError);
+      await Swal.fire({
+        icon: 'warning',
+        title: 'Cadastro salvo',
+        text: 'Não foi possível atualizar as listas agora. Atualize a página para ver as alterações.',
+        confirmButtonColor: '#d7ff00'
+      });
+      return;
+    }
+    await Swal.fire({
+      icon: 'success',
+      title: successTitle,
+      confirmButtonColor: '#d7ff00'
+    });
+  } catch (error) {
+    console.error(`Não foi possível salvar ${successTitle.toLocaleLowerCase('pt-BR')}`, error);
+    await Swal.fire({
+      icon: 'error',
+      title: saved ? 'Cadastro salvo' : 'Não foi possível salvar',
+      text: error.message || 'Verifique sua conexão e tente novamente.',
+      confirmButtonColor: '#d7ff00'
+    });
+  } finally {
+    button.disabled = false;
+  }
+}
+
+categoryForm.addEventListener('submit', async (event) => {
+  event.preventDefault();
+  const button = categoryForm.querySelector('[type="submit"]');
+  const id = categoryIdInput.value;
+  const values = {
+    name: categoryNameInput.value.trim(),
+    description: categoryDescriptionInput.value.trim()
+  };
+  await saveCatalogRecord(categoryDialog, button, () => {
+    if (id) {
+      return supabaseClient.from('hyla_categories').update(values).eq('id', id).select('id').maybeSingle();
+    }
+    return supabaseClient.from('hyla_categories')
+      .insert({ ...values, created_by: isAdmin ? null : currentUser.id }).select('id').single();
+  }, id ? 'Categoria atualizada' : 'Categoria cadastrada');
+});
+
+placeForm.addEventListener('submit', async (event) => {
+  event.preventDefault();
+  const button = placeForm.querySelector('[type="submit"]');
+  const id = placeIdInput.value;
+  const latitude = document.getElementById('place-latitude').value;
+  const longitude = document.getElementById('place-longitude').value;
+  const values = {
+    neighborhood: document.getElementById('place-neighborhood').value.trim(),
+    city: document.getElementById('place-city').value.trim(),
+    state: document.getElementById('place-state').value,
+    latitude: latitude ? Number(latitude) : null,
+    longitude: longitude ? Number(longitude) : null
+  };
+  await saveCatalogRecord(placeDialog, button, () => {
+    if (id) {
+      return supabaseClient.from('hyla_places').update(values).eq('id', id).select('id').maybeSingle();
+    }
+    return supabaseClient.from('hyla_places')
+      .insert({ ...values, created_by: isAdmin ? null : currentUser.id }).select('id').single();
+  }, id ? 'Local atualizado' : 'Local cadastrado');
+});
+
+async function deleteCatalogRecord(table, id, label) {
+  const confirmation = await Swal.fire({
+    icon: 'warning',
+    title: `Excluir ${label}?`,
+    text: 'Essa ação é permanente. Cadastros relacionados a ocorrências não podem ser removidos.',
+    showCancelButton: true,
+    confirmButtonText: 'Excluir',
+    cancelButtonText: 'Cancelar',
+    confirmButtonColor: '#b4534b',
+    cancelButtonColor: '#64748b'
+  });
+  if (!confirmation.isConfirmed) return;
+
+  try {
+    const { data, error } = await supabaseClient.from(table).delete().eq('id', id).select('id').maybeSingle();
+    if (error) throw error;
+    if (!data) throw new Error('Você não tem permissão para excluir este cadastro.');
+    try {
+      await loadCatalogs();
+      await loadReports();
+    } catch (refreshError) {
+      console.error('Cadastro excluído, mas as listas não puderam ser atualizadas', refreshError);
+      await Swal.fire({
+        icon: 'warning',
+        title: 'Cadastro excluído',
+        text: 'Não foi possível atualizar as listas agora. Atualize a página para ver as alterações.',
+        confirmButtonColor: '#d7ff00'
+      });
+      return;
+    }
+    await Swal.fire({
+      icon: 'success',
+      title: 'Cadastro excluído',
+      confirmButtonColor: '#d7ff00'
+    });
+  } catch (error) {
+    console.error(`Não foi possível excluir ${label}`, error);
+    await Swal.fire({
+      icon: 'error',
+      title: 'Não foi possível excluir',
+      text: error.code === '23503'
+        ? 'Este cadastro está vinculado a ocorrências. Edite ou mantenha os registros relacionados.'
+        : error.message || 'Verifique sua conexão e tente novamente.',
+      confirmButtonColor: '#d7ff00'
+    });
+  }
+}
+
+document.getElementById('create-category').addEventListener('click', () => openCategoryDialog());
+document.getElementById('create-place').addEventListener('click', () => openPlaceDialog());
+document.getElementById('refresh-categories').addEventListener('click', async () => {
+  try {
+    await loadCatalogs();
+  } catch (error) {
+    showDatabaseError(error, 'Não foi possível atualizar as categorias');
+  }
+});
+document.getElementById('refresh-places').addEventListener('click', async () => {
+  try {
+    await loadCatalogs();
+  } catch (error) {
+    showDatabaseError(error, 'Não foi possível atualizar os locais');
+  }
+});
+categoryList.addEventListener('click', (event) => {
+  const editButton = event.target.closest('[data-edit-category]');
+  const deleteButton = event.target.closest('[data-delete-category]');
+  if (editButton) {
+    const category = categories.find((item) => item.id === editButton.dataset.editCategory);
+    if (category) openCategoryDialog(category);
+  } else if (deleteButton) {
+    deleteCatalogRecord('hyla_categories', deleteButton.dataset.deleteCategory, 'esta categoria');
+  }
+});
+placeList.addEventListener('click', (event) => {
+  const editButton = event.target.closest('[data-edit-place]');
+  const deleteButton = event.target.closest('[data-delete-place]');
+  if (editButton) {
+    const place = places.find((item) => item.id === editButton.dataset.editPlace);
+    if (place) openPlaceDialog(place);
+  } else if (deleteButton) {
+    deleteCatalogRecord('hyla_places', deleteButton.dataset.deletePlace, 'este local');
+  }
+});
+document.querySelectorAll('[data-close-dialog]').forEach((button) => {
+  button.addEventListener('click', () => document.getElementById(button.dataset.closeDialog).close());
+});
+
+reportPlaceSelect.addEventListener('change', () => {
+  const place = places.find((item) => item.id === reportPlaceSelect.value);
+  document.getElementById('report-neighborhood').value = place?.neighborhood || '';
+  document.getElementById('report-city').value = place?.city || '';
+  document.getElementById('report-state').value = place?.state || '';
+  if (place) {
+    document.getElementById('report-latitude').value = place.latitude ?? '';
+    document.getElementById('report-longitude').value = place.longitude ?? '';
+    document.getElementById('location-status').textContent = place.latitude !== null
+      ? 'A localização cadastrada para este bairro será exibida no mapa.'
+      : 'Este local não tem coordenadas; o relato aparecerá nas listas e análises.';
+  }
+});
+
 async function loadReports() {
   const { data, error } = await supabaseClient
     .from('ocorrencias')
-    .select('id,user_id,title,description,category,neighborhood,city,state,status,latitude,longitude,image_url,created_at,resolved_at,is_demo')
+    .select('id,user_id,title,description,category,category_id,place_id,neighborhood,city,state,status,latitude,longitude,image_url,created_at,resolved_at,is_demo')
     .order('created_at', { ascending: false });
 
   if (error) throw error;
 
-  reports.splice(0, reports.length, ...data.map((row) => ({
-    id: row.id,
-    userId: row.user_id,
-    title: row.title,
-    description: row.description,
-    imageUrl: getPublicReportImageUrl(row.image_url),
-    category: row.category,
-    neighborhood: row.neighborhood,
-    city: row.city,
-    state: row.state,
-    status: row.status,
-    isDemo: row.is_demo,
-    isArchived: row.status === 'resolved' && row.resolved_at !== null &&
-      Date.now() - new Date(row.resolved_at).getTime() >= 30 * 24 * 60 * 60 * 1000,
-    time: formatRelativeTime(row.created_at),
-    mine: row.user_id === currentUser.id,
-    location: row.latitude !== null && row.longitude !== null ? [row.latitude, row.longitude] : null
-  })));
+  reports.splice(0, reports.length, ...data.map((row) => {
+    const category = categories.find((item) => item.id === row.category_id);
+    const place = places.find((item) => item.id === row.place_id);
+    const latitude = row.latitude ?? place?.latitude ?? null;
+    const longitude = row.longitude ?? place?.longitude ?? null;
+    return {
+      id: row.id,
+      userId: row.user_id,
+      title: row.title,
+      description: row.description,
+      imageUrl: getPublicReportImageUrl(row.image_url),
+      imageUrlValue: row.image_url,
+      categoryId: row.category_id,
+      placeId: row.place_id,
+      category: category?.name || row.category,
+      neighborhood: place?.neighborhood || row.neighborhood,
+      city: place?.city || row.city,
+      state: place?.state || row.state,
+      status: row.status,
+      isDemo: row.is_demo,
+      isArchived: row.status === 'resolved' && row.resolved_at !== null &&
+        Date.now() - new Date(row.resolved_at).getTime() >= 30 * 24 * 60 * 60 * 1000,
+      time: formatRelativeTime(row.created_at),
+      mine: row.user_id === currentUser.id,
+      location: latitude !== null && longitude !== null ? [latitude, longitude] : null
+    };
+  }));
 
+  renderCatalogs();
   updateLocationFilters();
   updateDashboardOverview();
   renderReports();
@@ -598,6 +941,8 @@ function switchPage(page) {
     dashboard: 'Dashboard',
     map: 'Mapa do Brasil',
     reports: showMine ? 'Minhas ocorrências' : 'Ocorrências',
+    categories: 'Categorias',
+    places: 'Locais',
     admin: 'Administração'
   };
   document.getElementById('page-title').textContent = pageTitles[view];
@@ -693,11 +1038,18 @@ includeArchivedMap.addEventListener('change', renderMapMarkers);
 includeArchivedReports.addEventListener('change', renderReports);
 
 reportList.addEventListener('click', async (event) => {
+  const editButton = event.target.closest('button[data-edit-report]');
+  if (editButton) {
+    const report = reports.find((item) => item.id === editButton.dataset.editReport);
+    if (report && (isAdmin || (report.mine && !report.isDemo))) openReportDialog(report);
+    return;
+  }
+
   const button = event.target.closest('button[data-delete-report]');
   if (!button || button.disabled) return;
 
   const report = reports.find((item) => item.id === button.dataset.deleteReport);
-  if (!report || (!report.mine && !isAdmin)) return;
+  if (!report || (!isAdmin && (!report.mine || report.isDemo))) return;
 
   const result = await Swal.fire({
     icon: 'warning',
@@ -762,12 +1114,41 @@ reportList.addEventListener('click', async (event) => {
 });
 
 document.querySelectorAll('[data-open-report]').forEach((button) => {
-  button.addEventListener('click', () => reportDialog.showModal());
+  button.addEventListener('click', () => openReportDialog());
 });
+
+function openReportDialog(report = null) {
+  reportForm.reset();
+  document.getElementById('report-id').value = report?.id || '';
+  document.getElementById('report-title').value = report?.title || '';
+  reportCategorySelect.value = report?.categoryId || '';
+  reportPlaceSelect.value = report?.placeId || '';
+  document.getElementById('report-neighborhood').value = report?.neighborhood || '';
+  document.getElementById('report-city').value = report?.city || '';
+  document.getElementById('report-state').value = report?.state || '';
+  document.getElementById('report-latitude').value = report?.location?.[0] ?? '';
+  document.getElementById('report-longitude').value = report?.location?.[1] ?? '';
+  document.getElementById('report-description').value = report?.description || '';
+  document.getElementById('report-dialog-title').textContent =
+    report ? 'Editar ocorrência' : 'Registrar ocorrência';
+  document.getElementById('save-report-label').textContent =
+    report ? 'Salvar alterações' : 'Enviar relato';
+  if (report?.imageUrl) {
+    reportImagePreview.src = report.imageUrl;
+    reportImagePreview.classList.remove('hidden');
+  }
+  document.getElementById('location-status').textContent = report?.location
+    ? 'A localização atual está associada a esta ocorrência.'
+    : 'Sem localização precisa, o relato aparece na lista, mas não recebe marcador no mapa.';
+  reportDialog.showModal();
+}
 
 function closeReportDialog() {
   reportDialog.close();
   reportForm.reset();
+  document.getElementById('report-id').value = '';
+  document.getElementById('report-dialog-title').textContent = 'Registrar ocorrência';
+  document.getElementById('save-report-label').textContent = 'Enviar relato';
   document.getElementById('location-status').textContent =
     'Sem localização precisa, o relato aparece na lista, mas não recebe marcador no mapa.';
 }
@@ -844,10 +1225,13 @@ reportForm.addEventListener('submit', async (event) => {
   const submitButton = reportForm.querySelector('[type="submit"]');
   submitButton.disabled = true;
   const formData = new FormData(reportForm);
+  const reportId = formData.get('id');
+  const existingReport = reportId ? reports.find((report) => report.id === reportId) : null;
   const latitudeValue = formData.get('latitude');
   const longitudeValue = formData.get('longitude');
   const imageFile = reportImageInput.files[0] || null;
   let uploadedImagePath = null;
+  let reportSaved = false;
   if (imageFile && (
     !allowedReportImageTypes.has(imageFile.type) ||
     imageFile.size === 0 ||
@@ -871,7 +1255,8 @@ reportForm.addEventListener('submit', async (event) => {
         'image/png': 'png',
         'image/webp': 'webp'
       };
-      uploadedImagePath = `${currentUser.id}/${crypto.randomUUID()}.${extensionByType[imageFile.type]}`;
+      const imageOwnerId = existingReport?.userId || currentUser.id;
+      uploadedImagePath = `${imageOwnerId}/${crypto.randomUUID()}.${extensionByType[imageFile.type]}`;
       const { error: uploadError } = await supabaseClient.storage
         .from('occurrence-images')
         .upload(uploadedImagePath, imageFile, {
@@ -883,45 +1268,88 @@ reportForm.addEventListener('submit', async (event) => {
       imageUrl = supabaseClient.storage
         .from('occurrence-images')
         .getPublicUrl(uploadedImagePath).data.publicUrl;
+    } else {
+      imageUrl = existingReport?.imageUrlValue || null;
     }
 
-    const { error } = await supabaseClient.from('ocorrencias').insert({
-      user_id: currentUser.id,
+    const selectedCategory = categories.find((category) => category.id === formData.get('category_id'));
+    const selectedPlace = places.find((place) => place.id === formData.get('place_id'));
+    if (!selectedCategory || !selectedPlace) {
+      throw new Error('Selecione uma categoria e um local cadastrados.');
+    }
+
+    const reportValues = {
       title: formData.get('title').trim(),
       description: formData.get('description').trim(),
-      category: formData.get('category'),
-      neighborhood: formData.get('neighborhood').trim(),
-      city: formData.get('city').trim(),
-      state: formData.get('state'),
-      status: 'pending',
+      category: selectedCategory.name,
+      category_id: selectedCategory.id,
+      place_id: selectedPlace.id,
+      neighborhood: selectedPlace.neighborhood,
+      city: selectedPlace.city,
+      state: selectedPlace.state,
       latitude: latitudeValue ? Number(latitudeValue) : null,
       longitude: longitudeValue ? Number(longitudeValue) : null,
       image_url: imageUrl
-    });
+    };
 
-    if (error) {
-      if (uploadedImagePath) {
-        const { error: cleanupError } = await supabaseClient.storage
+    const result = reportId
+      ? await supabaseClient.from('ocorrencias').update(reportValues).eq('id', reportId).select('id').maybeSingle()
+      : await supabaseClient.from('ocorrencias').insert({
+        ...reportValues,
+        user_id: currentUser.id,
+        status: 'pending'
+      });
+    if (result.error) throw result.error;
+    if (reportId && !result.data) {
+      throw new Error('Você não tem permissão para editar esta ocorrência.');
+    }
+    reportSaved = true;
+
+    let oldImageCleanupFailed = false;
+    if (imageFile && existingReport?.imageUrl) {
+      const oldImagePath = getOccurrenceImagePath(existingReport.imageUrl);
+      if (oldImagePath) {
+        const { error: removeError } = await supabaseClient.storage
           .from('occurrence-images')
-          .remove([uploadedImagePath]);
-        if (cleanupError) {
-          console.error('Não foi possível remover a foto após falha ao salvar o relato', cleanupError);
+          .remove([oldImagePath]);
+        if (removeError) {
+          console.error('Ocorrência atualizada, mas não foi possível remover a imagem anterior', removeError);
+          oldImageCleanupFailed = true;
         }
       }
-      showDatabaseError(error, 'Não foi possível registrar a ocorrência');
-      return;
     }
 
     closeReportDialog();
-    await loadReports();
-    Swal.fire({
+    try {
+      await loadReports();
+    } catch (refreshError) {
+      console.error('Ocorrência salva, mas a lista não pôde ser atualizada', refreshError);
+      showDatabaseError(refreshError, 'Ocorrência salva, mas a lista não pôde ser atualizada');
+      return;
+    }
+    Swal.fire(oldImageCleanupFailed ? {
+      icon: 'warning',
+      title: 'Ocorrência atualizada',
+      text: 'As alterações foram salvas, mas a foto anterior não pôde ser removida do armazenamento.',
+      confirmButtonColor: '#d7ff00'
+    } : {
       icon: 'success',
-      title: 'Relato registrado!',
-      text: 'Sua ocorrência foi salva e já está disponível para a comunidade.',
+      title: reportId ? 'Ocorrência atualizada' : 'Relato registrado!',
+      text: reportId
+        ? 'As alterações foram salvas.'
+        : 'Sua ocorrência foi salva e já está disponível para a comunidade.',
       confirmButtonColor: '#d7ff00'
     });
   } catch (error) {
-    showDatabaseError(error, 'Não foi possível registrar a ocorrência');
+    if (uploadedImagePath && !reportSaved) {
+      const { error: cleanupError } = await supabaseClient.storage
+        .from('occurrence-images')
+        .remove([uploadedImagePath]);
+      if (cleanupError) {
+        console.error('Não foi possível remover a foto após falha ao salvar a ocorrência', cleanupError);
+      }
+    }
+    showDatabaseError(error, reportId ? 'Não foi possível atualizar a ocorrência' : 'Não foi possível registrar a ocorrência');
   } finally {
     submitButton.disabled = false;
   }
@@ -1031,6 +1459,7 @@ async function initializeDashboard() {
     }
     isAdmin = profile.role === 'admin' && profile.is_active;
     document.getElementById('admin-nav').classList.toggle('hidden', !isAdmin);
+    await loadCatalogs();
     await loadReports();
   } catch (errorLoadingReports) {
     showDatabaseError(errorLoadingReports);

@@ -32,6 +32,12 @@
         <button type="button" class="rail-link" data-page-target="mine" aria-label="Minhas ocorrências" title="Minhas ocorrências">
           <i data-lucide="user-round" class="h-5 w-5"></i><span>Minhas ocorrências</span>
         </button>
+        <button type="button" class="rail-link" data-page-target="categories" aria-label="Categorias" title="Categorias">
+          <i data-lucide="tags" class="h-5 w-5"></i><span>Categorias</span>
+        </button>
+        <button type="button" class="rail-link" data-page-target="places" aria-label="Locais" title="Locais">
+          <i data-lucide="map-pinned" class="h-5 w-5"></i><span>Locais</span>
+        </button>
         <button id="admin-nav" type="button" class="rail-link hidden" data-page-target="admin" aria-label="Administração" title="Administração">
           <i data-lucide="shield-check" class="h-5 w-5"></i><span>Administração</span>
         </button>
@@ -124,8 +130,6 @@
                 <span>Categoria</span>
                 <select id="dashboard-category-filter" aria-label="Filtrar análises por categoria">
                   <option value="all">Todas as categorias</option>
-                  <option>Buracos</option><option>Lixo</option><option>Iluminação</option>
-                  <option>Árvores</option><option>Sinalização</option><option>Outros</option>
                 </select>
               </label>
               <button id="dashboard-reset-filters" type="button" class="dashboard-reset-button hidden">
@@ -213,7 +217,7 @@
               <select id="map-status-filter"><option value="all">Todos os status</option><option value="pending">Pendentes</option><option value="progress">Em andamento</option><option value="resolved">Resolvidas</option></select>
             </label>
             <label class="map-select-wrap"><span class="sr-only">Filtrar por categoria no mapa</span>
-              <select id="map-category-filter"><option value="all">Todas as categorias</option><option>Buracos</option><option>Lixo</option><option>Iluminação</option><option>Árvores</option><option>Sinalização</option><option>Outros</option></select>
+              <select id="map-category-filter"><option value="all">Todas as categorias</option></select>
             </label>
             <label class="archive-toggle"><input id="include-archived-map" type="checkbox"><span>Incluir arquivadas</span></label>
             <span class="map-toolbar-divider"></span>
@@ -242,7 +246,7 @@
             </label>
             <label class="map-select-wrap"><span class="sr-only">Filtrar por estado</span><select id="report-state-filter"><option value="all">Todos os estados</option></select></label>
             <label class="map-select-wrap"><span class="sr-only">Filtrar por cidade</span><select id="report-city-filter"><option value="all">Todas as cidades</option></select></label>
-            <label class="map-select-wrap"><span class="sr-only">Filtrar por categoria</span><select id="report-category-filter"><option value="all">Todas as categorias</option><option>Buracos</option><option>Lixo</option><option>Iluminação</option><option>Árvores</option><option>Sinalização</option><option>Outros</option></select></label>
+            <label class="map-select-wrap"><span class="sr-only">Filtrar por categoria</span><select id="report-category-filter"><option value="all">Todas as categorias</option></select></label>
             <label class="archive-toggle"><input id="include-archived-reports" type="checkbox"><span>Incluir arquivadas</span></label>
           </div>
           <div class="flex gap-2 overflow-x-auto border-b border-slate-100 px-5 py-3" aria-label="Filtrar ocorrências">
@@ -262,6 +266,44 @@
             <span>Relatos da comunidade HYLA.</span>
           </div>
           </section>
+        </section>
+
+        <section id="view-categories" class="app-view catalog-view hidden" aria-labelledby="categories-heading">
+          <div class="view-heading">
+            <div>
+              <p class="eyebrow">CADASTROS / CLASSIFICAÇÃO</p>
+              <h1 id="categories-heading">Categorias</h1>
+              <p class="view-subtitle">Organize os tipos de problemas usados nos relatos da comunidade.</p>
+            </div>
+            <button type="button" id="create-category" class="primary-action"><i data-lucide="plus" class="h-4 w-4"></i>Nova categoria</button>
+          </div>
+          <section class="catalog-panel" aria-labelledby="categories-list-heading">
+            <div class="catalog-panel-heading">
+              <div><h2 id="categories-list-heading">Categorias disponíveis</h2><p id="categories-count" aria-live="polite">Carregando categorias...</p></div>
+              <button id="refresh-categories" type="button" class="admin-refresh-button" aria-label="Atualizar categorias" title="Atualizar lista"><i data-lucide="refresh-cw" class="h-4 w-4"></i></button>
+            </div>
+            <div id="categories-list" class="catalog-list" aria-live="polite"></div>
+          </section>
+          <p class="catalog-note">Categorias em uso não podem ser removidas. Cada ocorrência mantém seu vínculo com a categoria.</p>
+        </section>
+
+        <section id="view-places" class="app-view catalog-view hidden" aria-labelledby="places-heading">
+          <div class="view-heading">
+            <div>
+              <p class="eyebrow">CADASTROS / TERRITÓRIO</p>
+              <h1 id="places-heading">Locais</h1>
+              <p class="view-subtitle">Cadastre bairros e municípios para relacionar com as ocorrências.</p>
+            </div>
+            <button type="button" id="create-place" class="primary-action"><i data-lucide="plus" class="h-4 w-4"></i>Novo local</button>
+          </div>
+          <section class="catalog-panel" aria-labelledby="places-list-heading">
+            <div class="catalog-panel-heading">
+              <div><h2 id="places-list-heading">Locais disponíveis</h2><p id="places-count" aria-live="polite">Carregando locais...</p></div>
+              <button id="refresh-places" type="button" class="admin-refresh-button" aria-label="Atualizar locais" title="Atualizar lista"><i data-lucide="refresh-cw" class="h-4 w-4"></i></button>
+            </div>
+            <div id="places-list" class="catalog-list" aria-live="polite"></div>
+          </section>
+          <p class="catalog-note">Locais em uso por ocorrências não podem ser removidos; edite o cadastro ou mantenha o histórico relacionado.</p>
         </section>
 
         <section id="view-admin" class="app-view admin-view hidden" aria-labelledby="admin-heading">
@@ -299,9 +341,10 @@
 
   <dialog id="report-dialog" class="w-[calc(100%-2rem)] max-w-lg rounded-2xl p-0 shadow-2xl backdrop:bg-slate-900/50">
     <form id="report-form">
+      <input id="report-id" name="id" type="hidden">
       <div class="flex items-start justify-between border-b border-slate-100 px-6 py-5">
         <div>
-          <h2 class="text-lg font-bold text-slate-900">Registrar ocorrência</h2>
+          <h2 id="report-dialog-title" class="text-lg font-bold text-slate-900">Registrar ocorrência</h2>
           <p class="mt-1 text-sm text-slate-500">Conte para a comunidade o que precisa de atenção.</p>
         </div>
         <button id="close-report-dialog" type="button" class="rounded-lg p-2 text-slate-400 hover:bg-slate-100 hover:text-slate-600" aria-label="Fechar formulário">
@@ -315,42 +358,22 @@
         </div>
         <div class="grid gap-4 sm:grid-cols-2">
           <div>
-            <label for="report-city" class="mb-1.5 block text-sm font-medium text-slate-700">Cidade</label>
-            <input id="report-city" name="city" required maxlength="100" placeholder="Ex.: Itu" class="h-11 w-full rounded-lg border border-slate-300 px-3 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100">
-          </div>
-          <div>
-            <label for="report-state" class="mb-1.5 block text-sm font-medium text-slate-700">Estado (UF)</label>
-            <select id="report-state" name="state" required class="h-11 w-full rounded-lg border border-slate-300 bg-white px-3 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100">
-              <option value="">Selecione</option>
-              <option value="AC">AC - Acre</option><option value="AL">AL - Alagoas</option>
-              <option value="AP">AP - Amapá</option><option value="AM">AM - Amazonas</option>
-              <option value="BA">BA - Bahia</option><option value="CE">CE - Ceará</option>
-              <option value="DF">DF - Distrito Federal</option><option value="ES">ES - Espírito Santo</option>
-              <option value="GO">GO - Goiás</option><option value="MA">MA - Maranhão</option>
-              <option value="MT">MT - Mato Grosso</option><option value="MS">MS - Mato Grosso do Sul</option>
-              <option value="MG">MG - Minas Gerais</option><option value="PA">PA - Pará</option>
-              <option value="PB">PB - Paraíba</option><option value="PR">PR - Paraná</option>
-              <option value="PE">PE - Pernambuco</option><option value="PI">PI - Piauí</option>
-              <option value="RJ">RJ - Rio de Janeiro</option><option value="RN">RN - Rio Grande do Norte</option>
-              <option value="RS">RS - Rio Grande do Sul</option><option value="RO">RO - Rondônia</option>
-              <option value="RR">RR - Roraima</option><option value="SC">SC - Santa Catarina</option>
-              <option value="SP">SP - São Paulo</option><option value="SE">SE - Sergipe</option>
-              <option value="TO">TO - Tocantins</option>
-            </select>
-          </div>
-          <div>
             <label for="report-category" class="mb-1.5 block text-sm font-medium text-slate-700">Categoria</label>
-            <select id="report-category" name="category" required class="h-11 w-full rounded-lg border border-slate-300 bg-white px-3 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100">
+            <select id="report-category" name="category_id" required class="h-11 w-full rounded-lg border border-slate-300 bg-white px-3 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100">
               <option value="">Selecione</option>
-              <option>Buracos</option><option>Lixo</option><option>Iluminação</option>
-              <option>Árvores</option><option>Sinalização</option><option>Outros</option>
             </select>
           </div>
           <div>
-            <label for="report-neighborhood" class="mb-1.5 block text-sm font-medium text-slate-700">Bairro</label>
-            <input id="report-neighborhood" name="neighborhood" required maxlength="60" placeholder="Ex.: Centro" class="h-11 w-full rounded-lg border border-slate-300 px-3 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100">
+            <label for="report-place" class="mb-1.5 block text-sm font-medium text-slate-700">Bairro / município</label>
+            <select id="report-place" name="place_id" required class="h-11 w-full rounded-lg border border-slate-300 bg-white px-3 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100">
+              <option value="">Selecione um local</option>
+            </select>
           </div>
         </div>
+        <p id="report-place-hint" class="text-xs text-slate-500">Cadastre um bairro na seção Locais para usá-lo em um relato.</p>
+        <input id="report-neighborhood" name="neighborhood" type="hidden">
+        <input id="report-city" name="city" type="hidden">
+        <input id="report-state" name="state" type="hidden">
         <div>
           <input id="report-latitude" name="latitude" type="hidden">
           <input id="report-longitude" name="longitude" type="hidden">
@@ -358,7 +381,7 @@
             <i data-lucide="map-pin" class="h-4 w-4"></i>
             Usar minha localização (opcional)
           </button>
-          <p id="location-status" class="mt-1.5 text-xs text-slate-500">Sem localização precisa, o relato aparece na lista, mas não recebe marcador no mapa.</p>
+          <p id="location-status" class="mt-1.5 text-xs text-slate-500">A localização cadastrada no bairro será usada no mapa, se disponível.</p>
         </div>
         <div>
           <label for="report-image" class="mb-1.5 block text-sm font-medium text-slate-700">Foto da ocorrência <span class="font-normal text-slate-400">(opcional)</span></label>
@@ -374,11 +397,43 @@
       </div>
       <div class="flex justify-end gap-3 border-t border-slate-100 bg-slate-50 px-6 py-4">
         <button id="cancel-report" type="button" class="rounded-lg px-4 py-2.5 text-sm font-semibold text-slate-600 hover:bg-slate-200">Cancelar</button>
-        <button type="submit" class="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+        <button id="save-report-button" type="submit" class="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
           <i data-lucide="send" class="h-4 w-4"></i>
-          Enviar relato
+          <span id="save-report-label">Enviar relato</span>
         </button>
       </div>
+    </form>
+  </dialog>
+
+  <dialog id="category-dialog" class="catalog-dialog w-[calc(100%-2rem)] max-w-lg rounded-2xl p-0 shadow-2xl">
+    <form id="category-form">
+      <input id="category-id" type="hidden">
+      <div class="catalog-dialog-heading"><div><h2 id="category-dialog-title">Nova categoria</h2><p>As categorias ajudam a organizar os relatos.</p></div><button type="button" data-close-dialog="category-dialog" aria-label="Fechar"><i data-lucide="x" class="h-4 w-4"></i></button></div>
+      <div class="catalog-dialog-body">
+        <label>Nome<input id="category-name" required minlength="2" maxlength="50" placeholder="Ex.: Calçadas"></label>
+        <label>Descrição <span>(opcional)</span><textarea id="category-description" maxlength="200" rows="3" placeholder="Explique quais situações entram nesta categoria."></textarea></label>
+      </div>
+      <div class="catalog-dialog-actions"><button type="button" data-close-dialog="category-dialog" class="secondary-action">Cancelar</button><button type="submit" class="primary-action"><i data-lucide="check" class="h-4 w-4"></i>Salvar categoria</button></div>
+    </form>
+  </dialog>
+
+  <dialog id="place-dialog" class="catalog-dialog w-[calc(100%-2rem)] max-w-lg rounded-2xl p-0 shadow-2xl">
+    <form id="place-form">
+      <input id="place-id" type="hidden">
+      <div class="catalog-dialog-heading"><div><h2 id="place-dialog-title">Novo local</h2><p>Cadastre o bairro e o município para usar nos relatos.</p></div><button type="button" data-close-dialog="place-dialog" aria-label="Fechar"><i data-lucide="x" class="h-4 w-4"></i></button></div>
+      <div class="catalog-dialog-body">
+        <label>Bairro<input id="place-neighborhood" required minlength="2" maxlength="60" placeholder="Ex.: Centro"></label>
+        <div class="catalog-dialog-grid">
+          <label>Município<input id="place-city" required minlength="2" maxlength="100" placeholder="Ex.: Itu"></label>
+          <label>Estado (UF)<select id="place-state" required><option value="">Selecione</option><option>AC</option><option>AL</option><option>AP</option><option>AM</option><option>BA</option><option>CE</option><option>DF</option><option>ES</option><option>GO</option><option>MA</option><option>MT</option><option>MS</option><option>MG</option><option>PA</option><option>PB</option><option>PR</option><option>PE</option><option>PI</option><option>RJ</option><option>RN</option><option>RS</option><option>RO</option><option>RR</option><option>SC</option><option>SP</option><option>SE</option><option>TO</option></select></label>
+        </div>
+        <p class="catalog-coordinate-note">Coordenadas são opcionais. Sem elas, o relato ainda aparece nas listas e análises.</p>
+        <div class="catalog-dialog-grid">
+          <label>Latitude<input id="place-latitude" type="number" step="any" min="-90" max="90" placeholder="-23.2645"></label>
+          <label>Longitude<input id="place-longitude" type="number" step="any" min="-180" max="180" placeholder="-47.2992"></label>
+        </div>
+      </div>
+      <div class="catalog-dialog-actions"><button type="button" data-close-dialog="place-dialog" class="secondary-action">Cancelar</button><button type="submit" class="primary-action"><i data-lucide="check" class="h-4 w-4"></i>Salvar local</button></div>
     </form>
   </dialog>
 

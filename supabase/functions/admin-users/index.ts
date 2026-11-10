@@ -217,6 +217,36 @@ Deno.serve(async (request: Request) => {
       return jsonResponse({ error: 'As contas foram preparadas, mas não foi possível verificar os relatos fictícios. Execute novamente para concluir.' }, 500, headers)
     }
 
+    const [categoriesResult, placesResult] = await Promise.all([
+      adminClient.from('hyla_categories').select('id, name'),
+      adminClient.from('hyla_places').select('id, neighborhood, city, state')
+    ])
+    if (categoriesResult.error || placesResult.error) {
+      const error = categoriesResult.error || placesResult.error
+      console.error('Could not load demo report catalogs:', error)
+      return jsonResponse({ error: 'Não foi possível carregar as categorias e locais. Execute a migração de cadastros do HYLA e tente novamente.' }, 500, headers)
+    }
+
+    const categoryIds = new Map(
+      categoriesResult.data.map((category) => [category.name.trim().toLocaleLowerCase('pt-BR'), category.id])
+    )
+    const placeKey = (neighborhood: string, city: string, state: string) =>
+      [neighborhood, city, state].map((part) => part.trim().toLocaleLowerCase('pt-BR')).join('|')
+    const placeIds = new Map(
+      placesResult.data.map((place) => [
+        placeKey(place.neighborhood, place.city, place.state),
+        place.id
+      ])
+    )
+    const missingCatalogEntries = demoReports.filter((report) =>
+      !categoryIds.has(report.category.trim().toLocaleLowerCase('pt-BR')) ||
+      !placeIds.has(placeKey(report.neighborhood, report.city, report.state))
+    )
+    if (missingCatalogEntries.length) {
+      console.error('Missing catalog entries for demo reports:', missingCatalogEntries)
+      return jsonResponse({ error: 'Faltam categorias ou locais usados na demonstração. Atualize os cadastros e tente novamente.' }, 500, headers)
+    }
+
     const existingReportKeys = new Set(
       existingReports.map((report) => `${report.user_id}|${report.title}`)
     )
@@ -229,6 +259,8 @@ Deno.serve(async (request: Request) => {
           title: report.title,
           description: report.description,
           category: report.category,
+          category_id: categoryIds.get(report.category.trim().toLocaleLowerCase('pt-BR')),
+          place_id: placeIds.get(placeKey(report.neighborhood, report.city, report.state)),
           neighborhood: report.neighborhood,
           city: report.city,
           state: report.state,
