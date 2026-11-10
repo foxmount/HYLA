@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 420" role="img" aria-labelledby="title desc">
+  <title id="title">Placa de trânsito danificada</title>
+  <desc id="desc">Ilustração de uma placa urbana amassada ao lado de uma avenida.</desc>
+  <defs><linearGradient id="sky" x2="0" y2="1"><stop stop-color="#c8e0de"/><stop offset="1" stop-color="#eee2cf"/></linearGradient></defs>
+  <rect width="760" height="420" fill="url(#sky)"/>
+  <circle cx="120" cy="81" r="34" fill="#f1d89c"/>
+  <path d="M0 266V130l126-43 125 43v136zm251 0V111l118-38 118 39v154zm236 0V141l113-39 160 45v119z" fill="#a9b8ab"/>
+  <path d="M22 157h42v44H22zm70-27h46v51H92zm72 15h43v46h-43zm111-2h41v48h-41zm64-25h42v53h-42zm67 25h42v47h-42zm115 20h44v44h-44zm68-27h43v52h-43zm72 16h43v45h-43z" fill="#718a7e"/>
+  <path d="M0 266h760v154H0z" fill="#4c5751"/>
+  <path d="M0 274h760" stroke="#d9ceb7" stroke-width="8"/>
+  <path d="m77 337 56-3 17 10h-92zm442-9h95l20 12h-128z" fill="#e2d3ac" opacity=".85"/>
+  <path d="M353 267V94" stroke="#515b55" stroke-width="13"/>
+  <path d="m294 103 16-54 105 3 19 53-18 51-112 2z" fill="#d8ded0" stroke="#66786e" stroke-width="8"/>
+  <path d="m319 75 84 1m-83 20 80 1m-65-30-15 58m42-57-10 58m41-58-9 58" stroke="#81928a" stroke-width="5" opacity=".75"/>
+  <path d="m344 154 12 15 13-14" fill="none" stroke="#515b55" stroke-width="8"/>
+</svg>

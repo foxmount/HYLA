@@ -28,12 +28,12 @@ const demoUsers = [
 ]
 
 const demoReports = [
-  { email: demoUsers[0].email, title: 'Buraco próximo à praça', description: 'Demonstração: pavimento danificado na via.', category: 'Buracos', neighborhood: 'Centro', city: 'Itu', state: 'SP', status: 'pending', latitude: -23.2645, longitude: -47.2992, ageHours: 2 },
-  { email: demoUsers[1].email, title: 'Lixeira pública danificada', description: 'Demonstração: lixeira precisa de manutenção.', category: 'Lixo', neighborhood: 'Vila Nova', city: 'Campinas', state: 'SP', status: 'progress', latitude: -22.9056, longitude: -47.0608, ageHours: 24 },
-  { email: demoUsers[2].email, title: 'Poste de iluminação apagado', description: 'Demonstração: ponto de luz sem funcionamento.', category: 'Iluminação', neighborhood: 'Boa Viagem', city: 'Recife', state: 'PE', status: 'resolved', latitude: -8.1190, longitude: -34.9010, ageHours: 72 },
-  { email: demoUsers[0].email, title: 'Calçada com acessibilidade comprometida', description: 'Demonstração: obstáculo na passagem de pedestres.', category: 'Outros', neighborhood: 'Centro', city: 'Curitiba', state: 'PR', status: 'pending', latitude: -25.4284, longitude: -49.2733, ageHours: 5 },
-  { email: demoUsers[1].email, title: 'Árvore caída após chuva', description: 'Demonstração: galhos bloqueiam parte da calçada.', category: 'Árvores', neighborhood: 'Asa Norte', city: 'Brasília', state: 'DF', status: 'progress', latitude: -15.7600, longitude: -47.8825, ageHours: 48 },
-  { email: demoUsers[2].email, title: 'Placa de trânsito danificada', description: 'Demonstração: sinalização precisa de reparo.', category: 'Sinalização', neighborhood: 'Barra', city: 'Salvador', state: 'BA', status: 'resolved', latitude: -13.0100, longitude: -38.5320, ageHours: 96 }
+  { email: demoUsers[0].email, title: 'Buraco na Rua Floriano Peixoto', description: 'O asfalto cedeu perto da praça e dificulta a passagem de bicicletas e veículos.', category: 'Buracos', neighborhood: 'Centro', city: 'Itu', state: 'SP', status: 'pending', latitude: -23.2645, longitude: -47.2992, ageHours: 2, image: 'pavement.svg' },
+  { email: demoUsers[1].email, title: 'Lixeira danificada na Praça Carlos Gomes', description: 'A estrutura está solta e parte dos resíduos acaba ficando ao lado da lixeira.', category: 'Lixo', neighborhood: 'Centro', city: 'Campinas', state: 'SP', status: 'progress', latitude: -22.9056, longitude: -47.0608, ageHours: 24, image: 'trash.svg' },
+  { email: demoUsers[2].email, title: 'Iluminação apagada na Avenida Boa Viagem', description: 'O trecho está sem iluminação à noite, próximo ao cruzamento com a Rua dos Navegantes.', category: 'Iluminação', neighborhood: 'Boa Viagem', city: 'Recife', state: 'PE', status: 'resolved', latitude: -8.1190, longitude: -34.9010, ageHours: 72, image: 'lighting.svg' },
+  { email: demoUsers[0].email, title: 'Calçada obstruída na Rua XV de Novembro', description: 'Um objeto deixado na calçada reduz a passagem e dificulta a circulação de pedestres.', category: 'Outros', neighborhood: 'Centro', city: 'Curitiba', state: 'PR', status: 'pending', latitude: -25.4284, longitude: -49.2733, ageHours: 5, image: 'sidewalk.svg' },
+  { email: demoUsers[1].email, title: 'Árvore caída na Asa Norte', description: 'Galhos de uma árvore caída ocupam parte da calçada após a chuva.', category: 'Árvores', neighborhood: 'Asa Norte', city: 'Brasília', state: 'DF', status: 'progress', latitude: -15.7600, longitude: -47.8825, ageHours: 48, image: 'tree.svg' },
+  { email: demoUsers[2].email, title: 'Placa danificada na Avenida Oceânica', description: 'A placa está inclinada e com a sinalização parcialmente comprometida.', category: 'Sinalização', neighborhood: 'Barra', city: 'Salvador', state: 'BA', status: 'resolved', latitude: -13.0100, longitude: -38.5320, ageHours: 96, image: 'sign.svg' }
 ]
 
 const generateDemoPassword = () =>
@@ -235,6 +235,7 @@ Deno.serve(async (request: Request) => {
           status: report.status,
           latitude: report.latitude,
           longitude: report.longitude,
+          image_url: `https://foxmount.github.io/HYLA/assets/demo-occurrences/${report.image}`,
           is_demo: true,
           created_at: new Date(Date.now() - report.ageHours * 60 * 60 * 1000).toISOString()
         }]

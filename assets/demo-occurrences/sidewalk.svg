@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 420" role="img" aria-labelledby="title desc">
+  <title id="title">Calçada obstruída</title>
+  <desc id="desc">Ilustração de uma calçada urbana parcialmente bloqueada por um obstáculo.</desc>
+  <defs><linearGradient id="sky" x2="0" y2="1"><stop stop-color="#d8e6e1"/><stop offset="1" stop-color="#f3e8d6"/></linearGradient></defs>
+  <rect width="760" height="420" fill="url(#sky)"/>
+  <path d="M0 244V106l141-43 146 43v138z" fill="#c1c9bd"/>
+  <path d="M23 132h47v53H23zm72-25h50v60H95zm82 27h47v52h-47z" fill="#7e948a"/>
+  <path d="M288 244V93l136-41 133 42v150z" fill="#d2c7af"/>
+  <path d="M318 119h42v54h-42zm72-23h45v60h-45zm77 26h44v53h-44z" fill="#879b91"/>
+  <path d="M0 245h760v31H0z" fill="#758678"/>
+  <path d="M0 276h760v144H0z" fill="#ded5c2"/>
+  <path d="M0 318h760M0 373h760" stroke="#c4b8a0" stroke-width="3"/>
+  <path d="M165 277v143m160-143v143m160-143v143m160-143v143" stroke="#c4b8a0" stroke-width="3"/>
+  <path d="M0 281h760v18H0z" fill="#b9a98b"/>
+  <path d="m326 249 31-37 44-9 37 17-5 46-37 17-42-9z" fill="#c97b48"/>
+  <path d="m326 249 44 14 63 3m-63-63 7 60m-21-35 47 7" fill="none" stroke="#f0c18c" stroke-width="5"/>
+  <path d="M292 304h195" stroke="#77847b" stroke-width="4" stroke-dasharray="12 10" opacity=".65"/>
+  <path d="M300 294h160" stroke="#f3efe3" stroke-width="8" opacity=".8"/>
+</svg>

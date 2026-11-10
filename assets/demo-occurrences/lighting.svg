@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 420" role="img" aria-labelledby="title desc">
+  <title id="title">Iluminação pública apagada</title>
+  <desc id="desc">Ilustração noturna de uma rua com um poste de iluminação desligado.</desc>
+  <defs><linearGradient id="night" x2="0" y2="1"><stop stop-color="#263b50"/><stop offset=".62" stop-color="#62747b"/><stop offset="1" stop-color="#d0bfa1"/></linearGradient></defs>
+  <rect width="760" height="420" fill="url(#night)"/>
+  <circle cx="625" cy="65" r="28" fill="#ece1c3"/>
+  <path d="M0 249V135l123-40 111 33v121zm240 0V117l125-33 113 40v125zm250 0V138l119-40 151 42v109z" fill="#425b64"/>
+  <path d="M20 154h39v43H20zm66-26h42v50H86zm66 19h42v43h-42zm128-2h40v48h-40zm71-25h42v52h-42zm66 20h38v44h-38zm101 19h44v42h-44zm72-27h41v50h-41zm69 17h42v43h-42z" fill="#e1c98d" opacity=".72"/>
+  <path d="M0 251h760v169H0z" fill="#333d3b"/>
+  <path d="M0 270h760" stroke="#d7c6a5" stroke-width="8"/>
+  <path d="M560 270 380 420H80l300-150zm0 0 200 150H540l-80-150z" fill="#46514c"/>
+  <path d="M350 335h39m-70 47h46" stroke="#decfa8" stroke-width="6" stroke-linecap="round" opacity=".7"/>
+  <path d="M173 277V66" stroke="#343f3b" stroke-width="11"/>
+  <path d="M170 72q0-24 25-24h66" fill="none" stroke="#343f3b" stroke-width="10" stroke-linecap="round"/>
+  <path d="M252 42h35l8 13h-51z" fill="#49524d"/>
+  <path d="M274 60 359 250H187z" fill="#d9bd79" opacity=".1"/>
+  <path d="M171 279h4" stroke="#d7c6a5" stroke-width="5"/>
+</svg>

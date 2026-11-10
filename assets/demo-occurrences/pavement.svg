@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 420" role="img" aria-labelledby="title desc">
+  <title id="title">Pavimento danificado</title>
+  <desc id="desc">Ilustração de uma rua urbana com um trecho de asfalto danificado.</desc>
+  <defs>
+    <linearGradient id="sky" x2="0" y2="1"><stop stop-color="#c9e2df"/><stop offset="1" stop-color="#f2e9d8"/></linearGradient>
+    <linearGradient id="road" x2="0" y2="1"><stop stop-color="#59625e"/><stop offset="1" stop-color="#303a36"/></linearGradient>
+  </defs>
+  <rect width="760" height="420" fill="url(#sky)"/>
+  <circle cx="624" cy="82" r="37" fill="#f2d89a"/>
+  <path d="M0 245 0 123 126 86 224 116 224 245Z" fill="#b7c5bd"/>
+  <path d="M22 138h40v52H22zm62-22h40v62H84zm70 21h45v60h-45z" fill="#788c83"/>
+  <path d="M234 245V103l117-37 117 37v142z" fill="#d2c8b3"/>
+  <path d="M257 126h34v42h-34zm60-13h34v48h-34zm62 14h34v42h-34z" fill="#8ea19a"/>
+  <path d="M500 245V133l112-30 106 29v113z" fill="#a5b4ab"/>
+  <path d="M529 151h39v42h-39zm65-18h38v47h-38zm60 18h38v43h-38z" fill="#71877e"/>
+  <path d="M0 239h760v36H0z" fill="#809080"/>
+  <path d="M0 271 760 271 760 420H0z" fill="url(#road)"/>
+  <path d="M0 276h760v9H0z" fill="#d3c9b2"/>
+  <path d="m306 333 31-20 23 10 18-21 26 9 22-13 25 12 23-5 24 20-16 17-28 4-17 17-29-8-21 13-27-12-29 1-28-13z" fill="#1e2824"/>
+  <path d="m355 329 22-12m-5 27 19-17m20 19 14-21m14 7 19-9" fill="none" stroke="#68736d" stroke-linecap="round" stroke-width="4"/>
+  <path d="M76 285h124m-82 0h124" stroke="#e5d7a8" stroke-dasharray="36 28" stroke-width="5" opacity=".8"/>
+  <path d="M0 400h760" stroke="#202a26" stroke-width="40" opacity=".35"/>
+</svg>

@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 420" role="img" aria-labelledby="title desc">
+  <title id="title">Árvore caída na calçada</title>
+  <desc id="desc">Ilustração de uma árvore caída após a chuva, bloqueando parte da calçada.</desc>
+  <defs><linearGradient id="sky" x2="0" y2="1"><stop stop-color="#c8d8d7"/><stop offset="1" stop-color="#e9e4d7"/></linearGradient></defs>
+  <rect width="760" height="420" fill="url(#sky)"/>
+  <path d="M0 271V116l117-37 135 41v151zm252 0V97l132-42 130 40v176zm260 0V128l112-42 136 40v145z" fill="#a8b7ae"/>
+  <path d="M27 145h41v47H27zm71-25h45v54H98zm82 19h42v48h-42zm96-3h43v49h-43zm67-28h44v54h-44zm70 28h43v48h-43zm122 20h42v45h-42zm66-27h44v52h-44z" fill="#71877c"/>
+  <path d="M0 270h760v150H0z" fill="#d8cfbb"/>
+  <path d="M0 317h760m-635-47v150m178-150v150m180-150v150m174-150v150" stroke="#c0b49b" stroke-width="3"/>
+  <path d="M553 270 400 420H147l220-150z" fill="#414b46"/>
+  <path d="M580 270 688 420h-97l-90-150z" fill="#536059"/>
+  <path d="m147 338 227-72 72 16-105 48-38 50-68-15-69 17z" fill="#754f35"/>
+  <path d="m206 331 159-61m-84 73 47-51" fill="none" stroke="#9e7048" stroke-width="10" stroke-linecap="round"/>
+  <circle cx="231" cy="297" r="40" fill="#54775b"/><circle cx="292" cy="282" r="43" fill="#67855f"/><circle cx="348" cy="270" r="39" fill="#78936b"/>
+  <circle cx="176" cy="306" r="31" fill="#78936b"/><circle cx="331" cy="314" r="35" fill="#4d6d54"/>
+  <path d="M0 269h760" stroke="#b5a98f" stroke-width="7"/>
+</svg>

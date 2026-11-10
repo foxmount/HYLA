@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 420" role="img" aria-labelledby="title desc">
+  <title id="title">Lixeira pública danificada</title>
+  <desc id="desc">Ilustração de uma praça com uma lixeira pública avariada.</desc>
+  <defs><linearGradient id="sky" x2="0" y2="1"><stop stop-color="#c9e0d1"/><stop offset="1" stop-color="#f0e5d0"/></linearGradient></defs>
+  <rect width="760" height="420" fill="url(#sky)"/>
+  <circle cx="630" cy="72" r="34" fill="#f3d89a"/>
+  <path d="M0 254q100-68 202 0t204 0 204 0 150 0v166H0z" fill="#8ea791"/>
+  <path d="M0 314q160-45 314 5t446-5v106H0z" fill="#d6cbb2"/>
+  <path d="M85 230V98h12v132m-30-102h72v9H67z" fill="#536c56"/>
+  <circle cx="92" cy="88" r="48" fill="#718d68"/><circle cx="56" cy="111" r="33" fill="#829c72"/><circle cx="124" cy="116" r="35" fill="#617f61"/>
+  <path d="M582 242V112h10v130m-28-105h67v9h-67z" fill="#536c56"/>
+  <circle cx="587" cy="101" r="43" fill="#78956e"/><circle cx="552" cy="126" r="30" fill="#879f78"/><circle cx="619" cy="127" r="33" fill="#66855f"/>
+  <path d="m316 214 110-22 20 100-111 20z" fill="#596b62"/>
+  <path d="m308 201 116-24 8 15-121 26z" fill="#394940"/>
+  <path d="m329 225 72-15 12 63-71 15z" fill="#87958a"/>
+  <path d="m340 239 34-7 6 32-34 7z" fill="#33413a"/>
+  <path d="m311 313 17-8 22 17-11 19-28-8z" fill="#5a4434"/>
+  <path d="m442 305 18-5 16 15-7 17-25-3z" fill="#b27949"/>
+  <path d="M243 337h270" stroke="#bcae91" stroke-width="5" stroke-linecap="round"/>
+</svg>

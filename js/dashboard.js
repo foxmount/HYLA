@@ -54,6 +54,22 @@ const map = L.map('city-map-canvas', {
   zoomControl: false
 });
 const mapMarkers = L.layerGroup().addTo(map);
+const MAX_REPORT_IMAGE_SIZE = 5 * 1024 * 1024;
+const allowedReportImageTypes = new Set(['image/jpeg', 'image/png', 'image/webp']);
+
+function getPublicReportImageUrl(value) {
+  if (typeof value !== 'string' || !value) return null;
+  try {
+    const url = new URL(value);
+    const isSupabaseImage = url.origin === 'https://rnfdliedxxmjakcgkhfc.supabase.co' &&
+      url.pathname.startsWith('/storage/v1/object/public/occurrence-images/');
+    const isDemoIllustration = url.origin === 'https://foxmount.github.io' &&
+      url.pathname.startsWith('/HYLA/assets/demo-occurrences/');
+    return url.protocol === 'https:' && (isSupabaseImage || isDemoIllustration) ? url.href : null;
+  } catch {
+    return null;
+  }
+}
 
 L.control.zoom({ position: 'topright' }).addTo(map);
 
@@ -103,7 +119,7 @@ function renderReports() {
     const matchesCategory = reportCategoryFilter.value === 'all' || report.category === reportCategoryFilter.value;
     const searchableText = `${report.title} ${report.category} ${report.neighborhood} ${report.city} ${report.state}`.toLocaleLowerCase('pt-BR');
     return matchesStatus && matchesState && matchesCity && matchesCategory &&
-      searchableText.includes(searchTerm) && (!showMine || report.mine);
+      searchableText.includes(searchTerm) && (!showMine || (report.mine && !report.isDemo));
   });
 
   reportList.innerHTML = visibleReports.map((report) => {
@@ -118,10 +134,11 @@ function renderReports() {
           <div class="flex flex-wrap items-center gap-2">
             <h3 class="text-sm font-semibold text-slate-800">${escapeHTML(report.title)}</h3>
             ${report.mine ? '<span class="rounded-full bg-blue-50 px-2 py-0.5 text-[10px] font-semibold text-blue-700">Seu relato</span>' : ''}
-            ${report.isDemo ? '<span class="demo-report-badge">Demonstração</span>' : ''}
+            ${report.isDemo ? '<span class="demo-report-badge">Exemplo</span>' : ''}
           </div>
           <p class="mt-1 text-xs text-slate-500">${escapeHTML(report.category)} <span class="mx-1 text-slate-300">·</span> ${escapeHTML(report.neighborhood)} <span class="mx-1 text-slate-300">·</span> ${escapeHTML(report.city)} - ${escapeHTML(report.state)} <span class="mx-1 text-slate-300">·</span> ${escapeHTML(report.time)}</p>
         </div>
+        ${report.imageUrl ? `<img class="report-list-image" src="${escapeHTML(report.imageUrl)}" alt="Foto: ${escapeHTML(report.title)}" loading="lazy">` : ''}
         <span class="inline-flex w-fit items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium ${status.classes}">
           <i data-lucide="${status.icon}" class="h-3.5 w-3.5"></i>
           ${status.label}
@@ -148,7 +165,7 @@ function renderRecentReports(visibleReports) {
     return `
       <div>
         <span class="activity-icon ${activityClass}"><i data-lucide="${icon}" class="h-4 w-4"></i></span>
-        <p><strong>${escapeHTML(report.title)}</strong><small>${report.isDemo ? 'Demonstração · ' : ''}${escapeHTML(report.city)} - ${escapeHTML(report.state)} · ${escapeHTML(report.neighborhood)} · ${status.label} · ${escapeHTML(report.time)}</small></p>
+        <p><strong>${escapeHTML(report.title)}</strong><small>${report.isDemo ? 'Exemplo · ' : ''}${escapeHTML(report.city)} - ${escapeHTML(report.state)} · ${escapeHTML(report.neighborhood)} · ${status.label} · ${escapeHTML(report.time)}</small></p>
       </div>
     `;
   }).join('');
@@ -361,7 +378,7 @@ function renderMapMarkers() {
     const marker = L.marker(report.location, { icon: markerIcon });
     marker.bindPopup(`
       <div class="map-popup">
-        ${report.isDemo ? '<p style="font-size:10px;color:#d7ff00;font-weight:700;letter-spacing:.06em">DADOS DE DEMONSTRAÇÃO</p>' : ''}
+        ${report.imageUrl ? `<img class="map-popup-image" src="${escapeHTML(report.imageUrl)}" alt="Foto: ${escapeHTML(report.title)}" loading="lazy">` : ''}
         <p style="font-size:11px;color:#d7ff00;font-weight:700;text-transform:uppercase;letter-spacing:.08em">${escapeHTML(report.category)}</p>
         <p style="margin-top:5px;font-weight:700">${escapeHTML(report.title)}</p>
         <p style="margin-top:4px;font-size:12px;color:#929991">${escapeHTML(report.neighborhood)} · ${escapeHTML(report.city)} - ${escapeHTML(report.state)} · ${status.label}</p>
@@ -501,7 +518,7 @@ function updateDashboardOverview() {
 async function loadReports() {
   const { data, error } = await supabaseClient
     .from('ocorrencias')
-    .select('id,user_id,title,description,category,neighborhood,city,state,status,latitude,longitude,created_at,is_demo')
+    .select('id,user_id,title,description,category,neighborhood,city,state,status,latitude,longitude,image_url,created_at,is_demo')
     .order('created_at', { ascending: false });
 
   if (error) throw error;
@@ -511,6 +528,7 @@ async function loadReports() {
     userId: row.user_id,
     title: row.title,
     description: row.description,
+    imageUrl: getPublicReportImageUrl(row.image_url),
     category: row.category,
     neighborhood: row.neighborhood,
     city: row.city,
@@ -648,6 +666,47 @@ function closeReportDialog() {
 document.getElementById('close-report-dialog').addEventListener('click', closeReportDialog);
 document.getElementById('cancel-report').addEventListener('click', closeReportDialog);
 
+const reportImageInput = document.getElementById('report-image');
+const reportImagePreview = document.getElementById('report-image-preview');
+let reportImagePreviewUrl = null;
+
+function clearReportImagePreview() {
+  if (reportImagePreviewUrl) URL.revokeObjectURL(reportImagePreviewUrl);
+  reportImagePreviewUrl = null;
+  reportImagePreview.removeAttribute('src');
+  reportImagePreview.classList.add('hidden');
+}
+
+reportForm.addEventListener('reset', clearReportImagePreview);
+reportImageInput.addEventListener('change', () => {
+  clearReportImagePreview();
+  const [file] = reportImageInput.files || [];
+  if (!file) return;
+  if (!allowedReportImageTypes.has(file.type)) {
+    reportImageInput.value = '';
+    Swal.fire({
+      icon: 'warning',
+      title: 'Formato de imagem não aceito',
+      text: 'Escolha uma imagem JPG, PNG ou WebP.',
+      confirmButtonColor: '#d7ff00'
+    });
+    return;
+  }
+  if (file.size > MAX_REPORT_IMAGE_SIZE) {
+    reportImageInput.value = '';
+    Swal.fire({
+      icon: 'warning',
+      title: 'Imagem muito grande',
+      text: 'Escolha uma imagem de até 5 MB.',
+      confirmButtonColor: '#d7ff00'
+    });
+    return;
+  }
+  reportImagePreviewUrl = URL.createObjectURL(file);
+  reportImagePreview.src = reportImagePreviewUrl;
+  reportImagePreview.classList.remove('hidden');
+});
+
 document.getElementById('use-current-location').addEventListener('click', () => {
   const locationStatus = document.getElementById('location-status');
   if (!navigator.geolocation) {
@@ -678,7 +737,45 @@ reportForm.addEventListener('submit', async (event) => {
   const formData = new FormData(reportForm);
   const latitudeValue = formData.get('latitude');
   const longitudeValue = formData.get('longitude');
+  const imageFile = reportImageInput.files[0] || null;
+  let uploadedImagePath = null;
+  if (imageFile && (
+    !allowedReportImageTypes.has(imageFile.type) ||
+    imageFile.size === 0 ||
+    imageFile.size > MAX_REPORT_IMAGE_SIZE
+  )) {
+    submitButton.disabled = false;
+    await Swal.fire({
+      icon: 'warning',
+      title: 'Imagem não aceita',
+      text: 'Escolha uma imagem JPG, PNG ou WebP de até 5 MB.',
+      confirmButtonColor: '#d7ff00'
+    });
+    return;
+  }
+
   try {
+    let imageUrl = null;
+    if (imageFile) {
+      const extensionByType = {
+        'image/jpeg': 'jpg',
+        'image/png': 'png',
+        'image/webp': 'webp'
+      };
+      uploadedImagePath = `${currentUser.id}/${crypto.randomUUID()}.${extensionByType[imageFile.type]}`;
+      const { error: uploadError } = await supabaseClient.storage
+        .from('occurrence-images')
+        .upload(uploadedImagePath, imageFile, {
+          cacheControl: '3600',
+          contentType: imageFile.type,
+          upsert: false
+        });
+      if (uploadError) throw uploadError;
+      imageUrl = supabaseClient.storage
+        .from('occurrence-images')
+        .getPublicUrl(uploadedImagePath).data.publicUrl;
+    }
+
     const { error } = await supabaseClient.from('ocorrencias').insert({
       user_id: currentUser.id,
       title: formData.get('title').trim(),
@@ -689,10 +786,19 @@ reportForm.addEventListener('submit', async (event) => {
       state: formData.get('state'),
       status: 'pending',
       latitude: latitudeValue ? Number(latitudeValue) : null,
-      longitude: longitudeValue ? Number(longitudeValue) : null
+      longitude: longitudeValue ? Number(longitudeValue) : null,
+      image_url: imageUrl
     });
 
     if (error) {
+      if (uploadedImagePath) {
+        const { error: cleanupError } = await supabaseClient.storage
+          .from('occurrence-images')
+          .remove([uploadedImagePath]);
+        if (cleanupError) {
+          console.error('Não foi possível remover a foto após falha ao salvar o relato', cleanupError);
+        }
+      }
       showDatabaseError(error, 'Não foi possível registrar a ocorrência');
       return;
     }
