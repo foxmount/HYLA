@@ -4,6 +4,7 @@
 
 .vscode/
 .idea/
+supabase/.temp/
 
 Thumbs.db
 Desktop.ini
