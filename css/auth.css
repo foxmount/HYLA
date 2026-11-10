@@ -132,6 +132,11 @@
 .auth-submit:hover { transform: translateY(-1px); background: #e4ff39; box-shadow: 0 7px 25px rgb(215 255 0 / 15%); }
 .auth-submit:focus-visible { outline: 2px solid var(--auth-text); outline-offset: 3px; }
 .auth-submit:disabled { transform: none; opacity: .65; cursor: wait; }
+.auth-text-button { display: block; margin: 12px 0 0 auto; border: 0; padding: 0; color: #a7b94b; background: transparent; font: inherit; font-size: 10px; cursor: pointer; }
+.auth-text-button:hover,
+.auth-text-button:focus-visible { color: var(--auth-neon); text-decoration: underline; outline: none; }
+.auth-text-button:focus-visible { outline: 2px solid var(--auth-neon); outline-offset: 4px; }
+.auth-text-button.hidden { display: none; }
 
 .auth-divider { display: flex; align-items: center; gap: 11px; margin-top: 26px; color: #60695f; }
 .auth-divider span { height: 1px; flex: 1; background: var(--auth-border); }

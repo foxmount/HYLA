@@ -69,6 +69,7 @@
           </label>
           <button type="submit" class="auth-submit"><span>Entrar na plataforma</span><i data-lucide="arrow-up-right" class="h-4 w-4"></i></button>
         </form>
+        <button id="request-password-reset" type="button" class="auth-text-button">Esqueci minha senha</button>
 
         <form id="form-register" class="auth-form hidden" role="tabpanel" aria-labelledby="tab-register">
           <label class="auth-field" for="register-email">
@@ -80,6 +81,18 @@
             <span class="input-wrap"><i data-lucide="lock-keyhole" class="h-4 w-4"></i><input type="password" id="register-password" name="password" required minlength="6" autocomplete="new-password" placeholder="Mínimo de 6 caracteres"></span>
           </label>
           <button type="submit" class="auth-submit"><span>Criar minha conta</span><i data-lucide="arrow-up-right" class="h-4 w-4"></i></button>
+        </form>
+
+        <form id="form-password-recovery" class="auth-form hidden">
+          <label class="auth-field" for="recovery-password">
+            <span>Nova senha</span>
+            <span class="input-wrap"><i data-lucide="lock-keyhole" class="h-4 w-4" aria-hidden="true"></i><input type="password" id="recovery-password" required minlength="6" autocomplete="new-password" placeholder="Mínimo de 6 caracteres"></span>
+          </label>
+          <label class="auth-field" for="recovery-password-confirmation">
+            <span>Confirme a nova senha</span>
+            <span class="input-wrap"><i data-lucide="lock-keyhole" class="h-4 w-4" aria-hidden="true"></i><input type="password" id="recovery-password-confirmation" required minlength="6" autocomplete="new-password" placeholder="Digite novamente"></span>
+          </label>
+          <button type="submit" class="auth-submit"><span>Salvar nova senha</span><i data-lucide="check" class="h-4 w-4" aria-hidden="true"></i></button>
         </form>
 
         <div class="auth-divider"><span></span><i data-lucide="map-pin" class="h-3.5 w-3.5"></i><span></span></div>

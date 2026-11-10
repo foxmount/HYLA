@@ -32,6 +32,9 @@
         <button type="button" class="rail-link" data-page-target="mine" aria-label="Minhas ocorrências" title="Minhas ocorrências">
           <i data-lucide="user-round" class="h-5 w-5"></i><span>Minhas ocorrências</span>
         </button>
+        <button id="admin-nav" type="button" class="rail-link hidden" data-page-target="admin" aria-label="Administração" title="Administração">
+          <i data-lucide="shield-check" class="h-5 w-5"></i><span>Administração</span>
+        </button>
         <span class="rail-divider"></span>
         <button type="button" class="rail-link" data-open-report aria-label="Nova ocorrência" title="Nova ocorrência">
           <i data-lucide="plus" class="h-5 w-5"></i><span>Nova ocorrência</span>
@@ -257,6 +260,41 @@
             <span>Relatos da comunidade HYLA.</span>
           </div>
           </section>
+        </section>
+
+        <section id="view-admin" class="app-view admin-view hidden" aria-labelledby="admin-heading">
+          <div class="view-heading">
+            <div>
+              <p class="eyebrow">HYLA / ACESSO RESTRITO</p>
+              <h1 id="admin-heading">Administração</h1>
+              <p class="view-subtitle">Gerencie contas sem visualizar senhas pessoais.</p>
+            </div>
+          </div>
+          <section class="demo-setup-panel" aria-labelledby="demo-setup-heading">
+            <div>
+              <h2 id="demo-setup-heading">Dados para apresentação</h2>
+              <p>Prepara três moradores fictícios e seis ocorrências demonstrativas em cidades diferentes. As senhas temporárias serão exibidas após a criação.</p>
+            </div>
+            <button id="admin-seed-demo" type="button" class="demo-setup-button">
+              <i data-lucide="flask-conical" class="h-4 w-4" aria-hidden="true"></i>
+              Preparar demonstração
+            </button>
+          </section>
+          <section class="admin-users-panel" aria-labelledby="admin-users-heading">
+            <div class="panel-heading">
+              <div><h2 id="admin-users-heading">Contas cadastradas</h2><p id="admin-users-count" aria-live="polite">Carregando contas...</p></div>
+              <button id="admin-refresh-users" type="button" class="admin-refresh-button" aria-label="Atualizar lista de contas" title="Atualizar lista">
+                <i data-lucide="refresh-cw" class="h-4 w-4" aria-hidden="true"></i>
+              </button>
+            </div>
+            <div class="admin-table-wrap">
+              <table class="admin-users-table">
+                <thead><tr><th scope="col">Conta</th><th scope="col">Criada em</th><th scope="col">Último acesso</th><th scope="col">Acesso</th><th scope="col"><span class="sr-only">Ações</span></th></tr></thead>
+                <tbody id="admin-users-list"><tr><td colspan="5" class="admin-table-message">Carregando contas...</td></tr></tbody>
+              </table>
+            </div>
+          </section>
+          <footer class="app-footer">Apenas administradores autorizados podem acessar esta área.</footer>
         </section>
       </main>
     </div>

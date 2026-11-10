@@ -18,6 +18,7 @@ const categoryDetails = {
 let activeFilter = 'all';
 let showMine = false;
 let currentUser = null;
+let isAdmin = false;
 
 const supabaseClient = window.hylaSupabase;
 const reportList = document.getElementById('report-list');
@@ -117,6 +118,7 @@ function renderReports() {
           <div class="flex flex-wrap items-center gap-2">
             <h3 class="text-sm font-semibold text-slate-800">${escapeHTML(report.title)}</h3>
             ${report.mine ? '<span class="rounded-full bg-blue-50 px-2 py-0.5 text-[10px] font-semibold text-blue-700">Seu relato</span>' : ''}
+            ${report.isDemo ? '<span class="demo-report-badge">Demonstração</span>' : ''}
           </div>
           <p class="mt-1 text-xs text-slate-500">${escapeHTML(report.category)} <span class="mx-1 text-slate-300">·</span> ${escapeHTML(report.neighborhood)} <span class="mx-1 text-slate-300">·</span> ${escapeHTML(report.city)} - ${escapeHTML(report.state)} <span class="mx-1 text-slate-300">·</span> ${escapeHTML(report.time)}</p>
         </div>
@@ -146,7 +148,7 @@ function renderRecentReports(visibleReports) {
     return `
       <div>
         <span class="activity-icon ${activityClass}"><i data-lucide="${icon}" class="h-4 w-4"></i></span>
-        <p><strong>${escapeHTML(report.title)}</strong><small>${escapeHTML(report.city)} - ${escapeHTML(report.state)} · ${escapeHTML(report.neighborhood)} · ${status.label} · ${escapeHTML(report.time)}</small></p>
+        <p><strong>${escapeHTML(report.title)}</strong><small>${report.isDemo ? 'Demonstração · ' : ''}${escapeHTML(report.city)} - ${escapeHTML(report.state)} · ${escapeHTML(report.neighborhood)} · ${status.label} · ${escapeHTML(report.time)}</small></p>
       </div>
     `;
   }).join('');
@@ -155,6 +157,179 @@ function renderRecentReports(visibleReports) {
     container.innerHTML = '<p class="py-4 text-xs text-slate-500">Nenhum relato neste recorte.</p>';
   }
 }
+
+function formatAccountDate(value) {
+  if (!value) return '—';
+  const date = new Date(value);
+  return Number.isNaN(date.getTime())
+    ? '—'
+    : date.toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' });
+}
+
+async function invokeAdminAction(action, userId) {
+  const { data, error } = await supabaseClient.functions.invoke('admin-users', {
+    body: { action, userId }
+  });
+  if (error) {
+    let message = error.message;
+    if (error.context instanceof Response) {
+      const response = await error.context.json().catch(() => null);
+      if (response?.error) message = response.error;
+    }
+    throw new Error(message);
+  }
+  if (data?.error) throw new Error(data.error);
+  return data;
+}
+
+async function loadAdminUsers() {
+  const list = document.getElementById('admin-users-list');
+  const count = document.getElementById('admin-users-count');
+  list.innerHTML = '<tr><td colspan="5" class="admin-table-message">Carregando contas...</td></tr>';
+  count.textContent = 'Carregando contas...';
+
+  try {
+    const data = await invokeAdminAction('list');
+    const users = data.users || [];
+    count.textContent = `${users.length} ${users.length === 1 ? 'conta cadastrada' : 'contas cadastradas'}`;
+    if (!users.length) {
+      list.innerHTML = '<tr><td colspan="5" class="admin-table-message">Ainda não há contas cadastradas.</td></tr>';
+      return;
+    }
+
+    list.innerHTML = users.map((user) => {
+      const accessLabel = user.isAdmin ? 'Administrador' : user.suspended ? 'Suspensa' : 'Ativa';
+      const accessClass = user.isAdmin ? 'is-admin' : user.suspended ? 'is-suspended' : '';
+      const actions = user.isAdmin
+        ? '<span aria-label="Conta administrativa">—</span>'
+        : `
+          <div class="admin-row-actions">
+            <button type="button" class="admin-row-action" data-admin-action="send_recovery" data-user-id="${escapeHTML(user.id)}">Enviar recuperação</button>
+            <button type="button" class="admin-row-action ${user.suspended ? '' : 'is-danger'}" data-admin-action="${user.suspended ? 'reactivate' : 'suspend'}" data-user-id="${escapeHTML(user.id)}">
+              ${user.suspended ? 'Reativar' : 'Suspender'}
+            </button>
+          </div>
+        `;
+      const accountName = user.displayName
+        ? `<span class="admin-user-name">${escapeHTML(user.displayName)}</span>`
+        : '';
+      const demoLabel = user.isDemo ? '<span class="admin-demo-label">Demonstração</span>' : '';
+      return `
+        <tr>
+          <td>${accountName}<span class="admin-user-email">${escapeHTML(user.email || 'Conta sem e-mail')}</span>${demoLabel}</td>
+          <td>${formatAccountDate(user.createdAt)}</td>
+          <td>${formatAccountDate(user.lastSignInAt)}</td>
+          <td><span class="admin-access-state ${accessClass}">${accessLabel}</span></td>
+          <td>${actions}</td>
+        </tr>
+      `;
+    }).join('');
+  } catch (error) {
+    console.error('Não foi possível carregar contas administrativas', error);
+    count.textContent = 'Falha ao carregar';
+    list.innerHTML = '<tr><td colspan="5" class="admin-table-message">Não foi possível carregar as contas. Verifique a função administrativa e tente novamente.</td></tr>';
+    Swal.fire({
+      icon: 'error',
+      title: 'Falha ao carregar contas',
+      text: error.message || 'Verifique a configuração da função administrativa.',
+      confirmButtonColor: '#d7ff00'
+    });
+  }
+}
+
+document.getElementById('admin-seed-demo').addEventListener('click', async (event) => {
+  const button = event.currentTarget;
+  const confirmation = await Swal.fire({
+    icon: 'question',
+    title: 'Preparar dados fictícios?',
+    text: 'Serão criadas ou atualizadas três contas de demonstração e inseridas seis ocorrências. As senhas temporárias serão redefinidas e exibidas apenas agora.',
+    showCancelButton: true,
+    confirmButtonText: 'Preparar',
+    cancelButtonText: 'Cancelar',
+    confirmButtonColor: '#d7ff00'
+  });
+  if (!confirmation.isConfirmed) return;
+
+  button.disabled = true;
+  try {
+    const data = await invokeAdminAction('seed_demo');
+    const credentialsMarkup = (data.credentials || []).map((account) => `
+      <div style="margin:12px 0;padding:12px;border:1px solid #3a413a;border-radius:8px;text-align:left">
+        <strong>${escapeHTML(account.name)}</strong>
+        <div style="margin-top:5px">${escapeHTML(account.email)}</div>
+        <code style="display:block;margin-top:6px;overflow-wrap:anywhere">${escapeHTML(account.password)}</code>
+      </div>
+    `).join('');
+    await Swal.fire({
+      icon: 'success',
+      title: 'Demonstração preparada',
+      html: `<p>Ocorrências novas: ${Number(data.reportsCreated) || 0}. As senhas abaixo são temporárias; copie-as agora para entrar como cada morador.</p>${credentialsMarkup}`,
+      confirmButtonText: 'Entendi',
+      confirmButtonColor: '#d7ff00',
+      width: 'min(640px, 94vw)'
+    });
+    await loadAdminUsers();
+  } catch (error) {
+    console.error('Não foi possível preparar os dados de demonstração', error);
+    await Swal.fire({
+      icon: 'error',
+      title: 'Falha ao preparar demonstração',
+      text: error.message || 'Verifique a configuração da função administrativa.',
+      confirmButtonColor: '#d7ff00'
+    });
+  } finally {
+    button.disabled = false;
+  }
+});
+
+document.getElementById('admin-refresh-users').addEventListener('click', loadAdminUsers);
+document.getElementById('admin-users-list').addEventListener('click', async (event) => {
+  const button = event.target.closest('button[data-admin-action]');
+  if (!button || button.disabled) return;
+
+  const action = button.dataset.adminAction;
+  const userId = button.dataset.userId;
+  const userRow = button.closest('tr');
+  const email = userRow.cells[0].textContent;
+  const isRecovery = action === 'send_recovery';
+  const isSuspend = action === 'suspend';
+  const result = await Swal.fire({
+    icon: isSuspend ? 'warning' : 'question',
+    title: isRecovery ? 'Enviar recuperação de acesso?' : isSuspend ? 'Suspender esta conta?' : 'Reativar esta conta?',
+    text: isRecovery
+      ? `Um link seguro será enviado para ${email}. O HYLA não acessa nem revela a senha.`
+      : isSuspend
+        ? `${email} perderá o acesso até ser reativada.`
+        : `${email} poderá entrar novamente no HYLA.`,
+    showCancelButton: true,
+    confirmButtonText: isRecovery ? 'Enviar link' : isSuspend ? 'Suspender conta' : 'Reativar conta',
+    cancelButtonText: 'Cancelar',
+    confirmButtonColor: isSuspend ? '#b4534b' : '#d7ff00',
+    cancelButtonColor: '#64748b'
+  });
+  if (!result.isConfirmed) return;
+
+  button.disabled = true;
+  try {
+    await invokeAdminAction(action, userId);
+    await Swal.fire({
+      icon: 'success',
+      title: isRecovery ? 'Link enviado' : isSuspend ? 'Conta suspensa' : 'Conta reativada',
+      text: isRecovery ? `O e-mail de recuperação foi enviado para ${email}.` : undefined,
+      confirmButtonColor: '#d7ff00'
+    });
+    await loadAdminUsers();
+  } catch (error) {
+    console.error('Falha ao atualizar a conta', error);
+    Swal.fire({
+      icon: 'error',
+      title: 'Não foi possível concluir a ação',
+      text: error.message || 'Verifique a configuração e tente novamente.',
+      confirmButtonColor: '#d7ff00'
+    });
+    button.disabled = false;
+  }
+});
 
 function renderMapMarkers() {
   const searchTerm = mapSearch.value.trim().toLocaleLowerCase('pt-BR');
@@ -186,6 +361,7 @@ function renderMapMarkers() {
     const marker = L.marker(report.location, { icon: markerIcon });
     marker.bindPopup(`
       <div class="map-popup">
+        ${report.isDemo ? '<p style="font-size:10px;color:#d7ff00;font-weight:700;letter-spacing:.06em">DADOS DE DEMONSTRAÇÃO</p>' : ''}
         <p style="font-size:11px;color:#d7ff00;font-weight:700;text-transform:uppercase;letter-spacing:.08em">${escapeHTML(report.category)}</p>
         <p style="margin-top:5px;font-weight:700">${escapeHTML(report.title)}</p>
         <p style="margin-top:4px;font-size:12px;color:#929991">${escapeHTML(report.neighborhood)} · ${escapeHTML(report.city)} - ${escapeHTML(report.state)} · ${status.label}</p>
@@ -325,7 +501,7 @@ function updateDashboardOverview() {
 async function loadReports() {
   const { data, error } = await supabaseClient
     .from('ocorrencias')
-    .select('id,user_id,title,description,category,neighborhood,city,state,status,latitude,longitude,created_at')
+    .select('id,user_id,title,description,category,neighborhood,city,state,status,latitude,longitude,created_at,is_demo')
     .order('created_at', { ascending: false });
 
   if (error) throw error;
@@ -340,6 +516,7 @@ async function loadReports() {
     city: row.city,
     state: row.state,
     status: row.status,
+    isDemo: row.is_demo,
     time: formatRelativeTime(row.created_at),
     mine: row.user_id === currentUser.id,
     location: row.latitude !== null && row.longitude !== null ? [row.latitude, row.longitude] : null
@@ -351,6 +528,7 @@ async function loadReports() {
 }
 
 function switchPage(page) {
+  if (page === 'admin' && !isAdmin) return;
   const view = page === 'mine' ? 'reports' : page;
   showMine = page === 'mine';
 
@@ -367,11 +545,15 @@ function switchPage(page) {
   const pageTitles = {
     dashboard: 'Dashboard',
     map: 'Mapa do Brasil',
-    reports: showMine ? 'Minhas ocorrências' : 'Ocorrências'
+    reports: showMine ? 'Minhas ocorrências' : 'Ocorrências',
+    admin: 'Administração'
   };
   document.getElementById('page-title').textContent = pageTitles[view];
-  document.getElementById('reports-heading').textContent = pageTitles[view];
-  renderReports();
+  if (view === 'reports') {
+    document.getElementById('reports-heading').textContent = pageTitles[view];
+    renderReports();
+  }
+  if (view === 'admin') loadAdminUsers();
   if (view === 'map') requestAnimationFrame(() => map.invalidateSize());
 }
 
@@ -617,6 +799,25 @@ async function initializeDashboard() {
   document.getElementById('connection-status').textContent = 'Conectado';
 
   try {
+    const { data: profile, error: profileError } = await supabaseClient
+      .from('profiles')
+      .select('role, is_active')
+      .eq('id', currentUser.id)
+      .single();
+    if (profileError) throw profileError;
+    if (!profile.is_active) {
+      await supabaseClient.auth.signOut();
+      await Swal.fire({
+        icon: 'warning',
+        title: 'Acesso suspenso',
+        text: 'Esta conta está suspensa. Fale com a equipe responsável se precisar de ajuda.',
+        confirmButtonColor: '#d7ff00'
+      });
+      window.location.href = 'index.html';
+      return;
+    }
+    isAdmin = profile.role === 'admin' && profile.is_active;
+    document.getElementById('admin-nav').classList.toggle('hidden', !isAdmin);
     await loadReports();
   } catch (errorLoadingReports) {
     showDatabaseError(errorLoadingReports);
