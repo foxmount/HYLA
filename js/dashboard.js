@@ -50,9 +50,11 @@ const map = L.map('city-map-canvas', {
   touchZoom: true,
   dragging: true,
   keyboard: true,
-  zoomControl: true
+  zoomControl: false
 });
 const mapMarkers = L.layerGroup().addTo(map);
+
+L.control.zoom({ position: 'topright' }).addTo(map);
 
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
   attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
