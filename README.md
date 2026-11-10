@@ -1,6 +1,6 @@
 # HYLA — Cidade em Foco
 
-Projeto acadêmico da FATEC Itu para gestão urbana comunitária. O HYLA permite visualizar relatos de problemas urbanos e acompanhar ocorrências por categoria e status.
+Projeto acadêmico da FATEC Itu para gestão urbana comunitária. O HYLA permite visualizar relatos de problemas urbanos e acompanhar ocorrências por categoria, status e município em todo o Brasil.
 
 ## Tecnologias
 
@@ -23,11 +23,13 @@ Depois, acesse <http://127.0.0.1:5500>.
 
 Login, cadastro e leitura/criação de ocorrências usam Supabase. A chave publishable fica em `js/supabase.js` e é apropriada para uso no navegador quando as políticas RLS estão ativas. Nunca coloque uma chave `secret`/`service_role` ou a senha do banco no frontend.
 
-Antes de testar, aplique `supabase/policies.sql` no SQL Editor do Supabase para limitar a criação de relatos ao status inicial `pending`. A tabela permite leitura pública: relatos e coordenadas compartilhadas ficam visíveis a todos.
+Antes de testar, execute `supabase/national-coverage.sql` no SQL Editor do Supabase para adicionar cidade e UF às ocorrências existentes. Os relatos antigos serão mantidos e classificados como Itu - SP, que era o local inicial do painel. Aplique também `supabase/policies.sql` para limitar a criação de relatos ao status inicial `pending`. A tabela permite leitura pública: relatos e coordenadas compartilhadas ficam visíveis a todos.
 
 Para autenticação local, adicione `http://127.0.0.1:5500/**` e `http://localhost:5500/**` à lista de URLs de redirecionamento em **Authentication → URL Configuration**. Configure também a URL do GitHub Pages ao publicar.
 
-O mapa usa coordenadas apenas quando a pessoa autoriza o compartilhamento de localização no formulário. Relatos sem coordenadas aparecem na lista, mas não têm marcador.
+O mapa cobre o Brasil e começa centralizado no país. Os relatos incluem cidade e UF; o mapa e a lista permitem filtrar por município, estado, status e categoria, além de pesquisar bairro, cidade, UF ou título. No dashboard, os filtros de estado, cidade e categoria atualizam juntos os indicadores, gráficos e atividade recente; os gráficos apresentam participação percentual e contagens para facilitar a leitura. A localização do navegador é opcional: relatos sem coordenadas aparecem nas listas, gráficos e filtros, mas não têm marcador no mapa.
+
+O menu do avatar mostra a conta autenticada e oferece a ação de sair. A central de notificações indica claramente que notificações automáticas ainda não estão habilitadas.
 
 ## Mapa
 

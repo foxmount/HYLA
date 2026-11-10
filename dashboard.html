@@ -37,14 +37,6 @@
           <i data-lucide="plus" class="h-5 w-5"></i><span>Nova ocorrência</span>
         </button>
       </nav>
-      <div class="rail-bottom">
-        <button id="notifications-button" type="button" class="rail-link" aria-label="Notificações" title="Notificações">
-          <i data-lucide="bell" class="h-5 w-5"></i><span>Notificações</span>
-        </button>
-        <button id="logout-button" type="button" class="rail-link" aria-label="Sair" title="Sair">
-          <i data-lucide="log-out" class="h-5 w-5"></i><span>Sair</span>
-        </button>
-      </div>
     </aside>
 
     <div class="hyla-workspace">
@@ -57,8 +49,40 @@
         </div>
         <div class="topbar-actions">
           <span class="topbar-updated"><span class="status-pulse"></span><span id="connection-status">Conectando...</span></span>
-          <span class="topbar-avatar" aria-label="Morador">M</span>
-          <button type="button" data-open-report class="topbar-report"><i data-lucide="plus" class="h-4 w-4"></i><span>Relatar problema</span></button>
+          <div class="topbar-account-actions" role="group" aria-label="Conta e notificações">
+            <div class="topbar-menu">
+              <button id="notifications-button" type="button" class="topbar-icon-button" aria-label="Notificações" title="Notificações" aria-haspopup="dialog" aria-expanded="false" aria-controls="notifications-panel">
+                <i data-lucide="bell" class="h-4 w-4" aria-hidden="true"></i>
+              </button>
+              <section id="notifications-panel" class="topbar-popover hidden" role="dialog" aria-labelledby="notifications-heading">
+                <div class="popover-heading">
+                  <span class="popover-icon"><i data-lucide="bell" class="h-4 w-4" aria-hidden="true"></i></span>
+                  <div><h2 id="notifications-heading" tabindex="-1">Notificações</h2><p>Central de atualizações</p></div>
+                </div>
+                <div class="popover-empty">
+                  <i data-lucide="bell-off" class="h-5 w-5" aria-hidden="true"></i>
+                  <p>As notificações ainda não estão habilitadas.</p>
+                  <small>Este painel não envia alertas automáticos por enquanto.</small>
+                </div>
+              </section>
+            </div>
+            <div class="topbar-menu">
+              <button id="profile-button" type="button" class="topbar-icon-button topbar-profile-button" aria-label="Abrir menu da conta" title="Conta" aria-haspopup="dialog" aria-expanded="false" aria-controls="profile-menu">
+                <i data-lucide="user-round" class="h-4 w-4" aria-hidden="true"></i>
+              </button>
+              <section id="profile-menu" class="topbar-popover profile-popover hidden" role="dialog" aria-labelledby="profile-heading">
+                <div class="profile-identity">
+                  <i data-lucide="user-round" class="profile-avatar-icon h-5 w-5" aria-hidden="true"></i>
+                  <div><h2 id="profile-heading">Sua conta</h2><p id="profile-email"></p></div>
+                </div>
+                <div class="popover-divider"></div>
+                <button id="logout-button" type="button" class="profile-logout">
+                  <i data-lucide="log-out" class="h-4 w-4" aria-hidden="true"></i><span>Sair da conta</span>
+                </button>
+              </section>
+            </div>
+          </div>
+          <button type="button" data-open-report class="topbar-report" aria-label="Relatar um problema"><i data-lucide="plus" class="h-4 w-4" aria-hidden="true"></i><span>Relatar problema</span></button>
         </div>
       </header>
 
@@ -66,63 +90,104 @@
         <section id="view-dashboard" class="app-view dashboard-view hidden" aria-labelledby="dashboard-heading">
           <div class="view-heading">
             <div>
-              <p class="eyebrow">CIDADE EM FOCO / ITU</p>
-              <h1 id="dashboard-heading">Dashboard</h1>
-              <p class="view-subtitle">Acompanhe os relatos e as melhorias da comunidade.</p>
+              <p class="eyebrow">HYLA / MONITORAMENTO</p>
+              <h1 id="dashboard-heading">Visão geral</h1>
+              <p class="view-subtitle">Acompanhe relatos e melhorias em cidades de todo o Brasil.</p>
             </div>
             <button type="button" data-open-report class="primary-action"><i data-lucide="plus" class="h-4 w-4"></i>Nova ocorrência</button>
           </div>
+          <section class="dashboard-scope" aria-labelledby="dashboard-scope-heading">
+            <div class="dashboard-scope-heading">
+              <i data-lucide="list-filter" class="h-4 w-4" aria-hidden="true"></i>
+              <div>
+                <h2 id="dashboard-scope-heading">Recorte da análise</h2>
+                <p id="dashboard-filter-summary" aria-live="polite">Brasil inteiro · Todas as categorias</p>
+              </div>
+            </div>
+            <div class="dashboard-filter-controls">
+              <label class="dashboard-filter-field">
+                <span>Estado</span>
+                <select id="dashboard-state-filter" aria-label="Filtrar análises por estado">
+                  <option value="all">Todos os estados</option>
+                </select>
+              </label>
+              <label class="dashboard-filter-field">
+                <span>Cidade</span>
+                <select id="dashboard-city-filter" aria-label="Filtrar análises por cidade">
+                  <option value="all">Todas as cidades</option>
+                </select>
+              </label>
+              <label class="dashboard-filter-field">
+                <span>Categoria</span>
+                <select id="dashboard-category-filter" aria-label="Filtrar análises por categoria">
+                  <option value="all">Todas as categorias</option>
+                  <option>Buracos</option><option>Lixo</option><option>Iluminação</option>
+                  <option>Árvores</option><option>Sinalização</option><option>Outros</option>
+                </select>
+              </label>
+              <button id="dashboard-reset-filters" type="button" class="dashboard-reset-button hidden">
+                <i data-lucide="rotate-ccw" class="h-3.5 w-3.5" aria-hidden="true"></i>
+                <span>Limpar</span>
+              </button>
+            </div>
+          </section>
           <section class="stats-grid" aria-label="Resumo das ocorrências">
-          <article class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-            <div class="flex items-start justify-between">
-              <div><p class="text-sm font-medium text-slate-500">Ocorrências registradas</p><p id="stat-total" class="mt-2 text-3xl font-bold text-slate-900">0</p></div>
-              <span class="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-50 text-blue-600"><i data-lucide="clipboard-list" class="h-5 w-5"></i></span>
-            </div>
-            <p class="mt-3 text-xs text-slate-500">Relatos da comunidade</p>
-          </article>
-          <article class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-            <div class="flex items-start justify-between">
-              <div><p class="text-sm font-medium text-slate-500">Aguardando atendimento</p><p id="stat-pending" class="mt-2 text-3xl font-bold text-slate-900">0</p></div>
-              <span class="flex h-10 w-10 items-center justify-center rounded-lg bg-red-50 text-red-600"><i data-lucide="circle-alert" class="h-5 w-5"></i></span>
-            </div>
-            <p class="mt-3 text-xs text-slate-500">Precisam de atenção</p>
-          </article>
-          <article class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-            <div class="flex items-start justify-between">
-              <div><p class="text-sm font-medium text-slate-500">Em andamento</p><p id="stat-progress" class="mt-2 text-3xl font-bold text-slate-900">0</p></div>
-              <span class="flex h-10 w-10 items-center justify-center rounded-lg bg-amber-50 text-amber-600"><i data-lucide="clock-3" class="h-5 w-5"></i></span>
-            </div>
-            <p class="mt-3 text-xs text-slate-500">Sendo acompanhadas</p>
-          </article>
-          <article class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-            <div class="flex items-start justify-between">
-              <div><p class="text-sm font-medium text-slate-500">Resolvidas</p><p id="stat-resolved" class="mt-2 text-3xl font-bold text-slate-900">0</p></div>
-              <span class="flex h-10 w-10 items-center justify-center rounded-lg bg-green-50 text-green-600"><i data-lucide="circle-check" class="h-5 w-5"></i></span>
-            </div>
-            <p class="mt-3 text-xs text-slate-500">Melhorias concluídas</p>
-          </article>
+            <article class="metric-cell metric-total">
+              <div class="metric-label"><span aria-hidden="true"></span><h2>Registros</h2></div>
+              <p id="stat-total" class="metric-value">0</p>
+              <p class="metric-note">no recorte atual</p>
+            </article>
+            <article class="metric-cell metric-pending">
+              <div class="metric-label"><span aria-hidden="true"></span><h2>Pendentes</h2></div>
+              <p id="stat-pending" class="metric-value">0</p>
+              <p class="metric-note">aguardando atendimento</p>
+            </article>
+            <article class="metric-cell metric-progress">
+              <div class="metric-label"><span aria-hidden="true"></span><h2>Em andamento</h2></div>
+              <p id="stat-progress" class="metric-value">0</p>
+              <p class="metric-note">em acompanhamento</p>
+            </article>
+            <article class="metric-cell metric-resolved">
+              <div class="metric-label"><span aria-hidden="true"></span><h2>Resolvidas</h2></div>
+              <p id="stat-resolved" class="metric-value">0</p>
+              <p class="metric-note">atendimento concluído</p>
+            </article>
+          </section>
+          <section class="analytics-grid" aria-label="Análises das ocorrências">
+            <article class="analytics-panel">
+              <div class="panel-heading"><div><h2 id="status-chart-heading">Por status</h2><p>Etapa de atendimento</p></div><i data-lucide="chart-no-axes-column-increasing" class="h-4 w-4" aria-hidden="true"></i></div>
+              <div id="status-chart" class="analytics-chart" role="list" aria-labelledby="status-chart-heading" aria-live="polite"></div>
+            </article>
+            <article class="analytics-panel">
+              <div class="panel-heading"><div><h2 id="category-chart-heading">Por categoria</h2><p>Tipo de ocorrência</p></div><i data-lucide="chart-pie" class="h-4 w-4" aria-hidden="true"></i></div>
+              <div id="category-chart" class="analytics-chart" role="list" aria-labelledby="category-chart-heading" aria-live="polite"></div>
+            </article>
+            <article class="analytics-panel">
+              <div class="panel-heading"><div><h2 id="region-chart-heading">Por município</h2><p>Municípios com mais registros</p></div><i data-lucide="map-pinned" class="h-4 w-4" aria-hidden="true"></i></div>
+              <div id="region-chart" class="analytics-chart" role="list" aria-labelledby="region-chart-heading" aria-live="polite"></div>
+            </article>
           </section>
           <section class="dashboard-lower-grid">
             <article class="dashboard-panel">
-              <div class="panel-heading">              <div><h2>Últimas ocorrências</h2><p>Relatos mais recentes da comunidade</p></div><i data-lucide="activity" class="h-5 w-5"></i></div>
-              <div id="recent-reports" class="activity-list"></div>
-              <p class="panel-footnote">Informações carregadas do banco de dados do HYLA.</p>
+              <div class="panel-heading"><div><h2>Atividade recente</h2><p>Últimos registros neste recorte</p></div><i data-lucide="activity" class="h-4 w-4" aria-hidden="true"></i></div>
+              <div id="recent-reports" class="activity-list" aria-live="polite"></div>
+              <p class="panel-footnote">Atualizado a partir dos relatos da comunidade.</p>
             </article>
             <button type="button" data-page-target="map" class="map-preview-card">
               <span class="map-preview-icon"><i data-lucide="map" class="h-6 w-6"></i></span>
-              <span><strong>Explorar mapa</strong><small>Veja as ocorrências distribuídas pela cidade</small></span>
+              <span><strong>Explorar mapa</strong><small>Veja as ocorrências pelo Brasil</small></span>
               <i data-lucide="arrow-up-right" class="h-4 w-4"></i>
             </button>
           </section>
           <footer class="app-footer">HYLA — Cidade em Foco · Projeto acadêmico · FATEC Itu</footer>
         </section>
 
-        <section id="view-map" class="app-view map-view" aria-label="Mapa da cidade">
+        <section id="view-map" class="app-view map-view" aria-label="Mapa do Brasil">
           <div class="map-frame">
-            <div id="city-map-canvas" role="application" aria-label="Mapa interativo de ocorrências em Itu"></div>
+            <div id="city-map-canvas" role="application" aria-label="Mapa interativo de ocorrências no Brasil"></div>
             <div class="map-floating-title">
               <span class="map-floating-icon"><i data-lucide="map-pin" class="h-4 w-4"></i></span>
-              <span><strong>Itu, São Paulo</strong><small>Mapa comunitário de ocorrências</small></span>
+              <span><strong>Brasil</strong><small>Mapa comunitário de ocorrências</small></span>
             </div>
             <div class="map-legend">
               <span><span class="map-dot map-dot-pending"></span>Pendente</span>
@@ -133,7 +198,13 @@
           <div class="map-toolbar">
             <label class="map-search">
               <i data-lucide="search" class="h-4 w-4"></i>
-              <input id="map-search" type="search" placeholder="Buscar bairro ou ocorrência" aria-label="Buscar no mapa">
+              <input id="map-search" type="search" placeholder="Buscar cidade, bairro ou ocorrência" aria-label="Buscar cidade ou ocorrência no mapa">
+            </label>
+            <label class="map-select-wrap"><span class="sr-only">Filtrar por estado no mapa</span>
+              <select id="map-state-filter"><option value="all">Todos os estados</option></select>
+            </label>
+            <label class="map-select-wrap"><span class="sr-only">Filtrar por cidade</span>
+              <select id="map-city-filter"><option value="all">Todas as cidades</option></select>
             </label>
             <label class="map-select-wrap"><span class="sr-only">Filtrar por status no mapa</span>
               <select id="map-status-filter"><option value="all">Todos os status</option><option value="pending">Pendentes</option><option value="progress">Em andamento</option><option value="resolved">Resolvidas</option></select>
@@ -153,18 +224,21 @@
             <div>
               <p class="eyebrow">COMUNIDADE / RELATOS</p>
               <h1 id="reports-heading">Ocorrências</h1>
-              <p class="view-subtitle">Acompanhe os relatos registrados em Itu.</p>
+              <p class="view-subtitle">Acompanhe os relatos registrados em todo o Brasil.</p>
             </div>
             <button type="button" data-open-report class="primary-action"><i data-lucide="plus" class="h-4 w-4"></i>Nova ocorrência</button>
           </div>
           <section id="reports" class="reports-panel">
-          <div class="flex flex-col gap-4 border-b border-slate-100 px-5 py-5 sm:flex-row sm:items-center sm:justify-between">
+          <div class="reports-toolbar border-b border-slate-100 px-5 py-5">
             <h2 class="font-semibold text-slate-900">Todos os relatos</h2>
             <label class="relative block sm:w-64">
               <span class="sr-only">Buscar ocorrência</span>
               <i data-lucide="search" class="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400"></i>
-              <input id="report-search" type="search" placeholder="Buscar ocorrência..." class="h-10 w-full rounded-lg border border-slate-200 bg-white pl-9 pr-3 text-sm outline-none transition placeholder:text-slate-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-100">
+              <input id="report-search" type="search" placeholder="Buscar título, bairro ou cidade..." class="h-10 w-full rounded-lg border border-slate-200 bg-white pl-9 pr-3 text-sm outline-none transition placeholder:text-slate-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-100">
             </label>
+            <label class="map-select-wrap"><span class="sr-only">Filtrar por estado</span><select id="report-state-filter"><option value="all">Todos os estados</option></select></label>
+            <label class="map-select-wrap"><span class="sr-only">Filtrar por cidade</span><select id="report-city-filter"><option value="all">Todas as cidades</option></select></label>
+            <label class="map-select-wrap"><span class="sr-only">Filtrar por categoria</span><select id="report-category-filter"><option value="all">Todas as categorias</option><option>Buracos</option><option>Lixo</option><option>Iluminação</option><option>Árvores</option><option>Sinalização</option><option>Outros</option></select></label>
           </div>
           <div class="flex gap-2 overflow-x-auto border-b border-slate-100 px-5 py-3" aria-label="Filtrar ocorrências">
             <button type="button" data-filter="all" aria-pressed="true" class="shrink-0 rounded-full bg-blue-600 px-3.5 py-1.5 text-xs font-semibold text-white">Todas</button>
@@ -180,7 +254,7 @@
           </div>
           <div class="flex flex-col gap-2 border-t border-slate-100 px-5 py-4 text-xs text-slate-400 sm:flex-row sm:items-center sm:justify-between">
             <span id="report-count">0 ocorrências</span>
-            <span>Dados fictícios para demonstração acadêmica.</span>
+            <span>Relatos da comunidade HYLA.</span>
           </div>
           </section>
         </section>
@@ -205,6 +279,30 @@
           <input id="report-title" name="title" required maxlength="80" placeholder="Ex.: Buraco na Rua das Flores" class="h-11 w-full rounded-lg border border-slate-300 px-3 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100">
         </div>
         <div class="grid gap-4 sm:grid-cols-2">
+          <div>
+            <label for="report-city" class="mb-1.5 block text-sm font-medium text-slate-700">Cidade</label>
+            <input id="report-city" name="city" required maxlength="100" placeholder="Ex.: Itu" class="h-11 w-full rounded-lg border border-slate-300 px-3 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100">
+          </div>
+          <div>
+            <label for="report-state" class="mb-1.5 block text-sm font-medium text-slate-700">Estado (UF)</label>
+            <select id="report-state" name="state" required class="h-11 w-full rounded-lg border border-slate-300 bg-white px-3 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100">
+              <option value="">Selecione</option>
+              <option value="AC">AC - Acre</option><option value="AL">AL - Alagoas</option>
+              <option value="AP">AP - Amapá</option><option value="AM">AM - Amazonas</option>
+              <option value="BA">BA - Bahia</option><option value="CE">CE - Ceará</option>
+              <option value="DF">DF - Distrito Federal</option><option value="ES">ES - Espírito Santo</option>
+              <option value="GO">GO - Goiás</option><option value="MA">MA - Maranhão</option>
+              <option value="MT">MT - Mato Grosso</option><option value="MS">MS - Mato Grosso do Sul</option>
+              <option value="MG">MG - Minas Gerais</option><option value="PA">PA - Pará</option>
+              <option value="PB">PB - Paraíba</option><option value="PR">PR - Paraná</option>
+              <option value="PE">PE - Pernambuco</option><option value="PI">PI - Piauí</option>
+              <option value="RJ">RJ - Rio de Janeiro</option><option value="RN">RN - Rio Grande do Norte</option>
+              <option value="RS">RS - Rio Grande do Sul</option><option value="RO">RO - Rondônia</option>
+              <option value="RR">RR - Roraima</option><option value="SC">SC - Santa Catarina</option>
+              <option value="SP">SP - São Paulo</option><option value="SE">SE - Sergipe</option>
+              <option value="TO">TO - Tocantins</option>
+            </select>
+          </div>
           <div>
             <label for="report-category" class="mb-1.5 block text-sm font-medium text-slate-700">Categoria</label>
             <select id="report-category" name="category" required class="h-11 w-full rounded-lg border border-slate-300 bg-white px-3 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100">
@@ -231,7 +329,7 @@
           <label for="report-description" class="mb-1.5 block text-sm font-medium text-slate-700">Descrição</label>
           <textarea id="report-description" name="description" required maxlength="500" rows="3" placeholder="Descreva brevemente o problema e sua localização." class="w-full rounded-lg border border-slate-300 px-3 py-2.5 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"></textarea>
         </div>
-        <p class="rounded-lg bg-amber-50 px-3 py-2 text-xs leading-5 text-amber-800">Os relatos e, se você autorizar, suas coordenadas ficam visíveis publicamente. Não inclua dados pessoais no relato.</p>
+        <p class="rounded-lg bg-amber-50 px-3 py-2 text-xs leading-5 text-amber-800">Os relatos e, se você autorizar, suas coordenadas ficam visíveis publicamente. Informe a cidade e a UF corretas e não inclua dados pessoais no relato.</p>
       </div>
       <div class="flex justify-end gap-3 border-t border-slate-100 bg-slate-50 px-6 py-4">
         <button id="cancel-report" type="button" class="rounded-lg px-4 py-2.5 text-sm font-semibold text-slate-600 hover:bg-slate-200">Cancelar</button>
