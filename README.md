@@ -1,31 +1,90 @@
 # HYLA — Cidade em Foco
 
-Projeto acadêmico da FATEC Itu para gestão urbana comunitária. O HYLA permite visualizar relatos de problemas urbanos e acompanhar ocorrências por categoria, status e município em todo o Brasil.
+## Sobre o projeto
+
+O HYLA — Cidade em Foco é uma aplicação web acadêmica desenvolvida para a disciplina de Programação para a Internet da FATEC Itu.
+
+### Problema identificado
+
+Informações sobre problemas urbanos do cotidiano podem ficar espalhadas em conversas e canais diferentes, dificultando que moradores acompanhem os relatos e entendam quais situações já foram atendidas.
+
+### Objetivo
+
+Oferecer um espaço comunitário para registrar ocorrências urbanas, consultar relatos por região e categoria e acompanhar seu status em um mapa e em painéis de análise.
+
+### Integrantes
+
+- Felipe Cunha Orejana
+- Pedro Henrique Jacomassi
+
+### Aplicação publicada
+
+[Acessar o HYLA no GitHub Pages](https://foxmount.github.io/HYLA/)
 
 ## Tecnologias
 
 - HTML5, CSS3 e JavaScript Vanilla
 - Tailwind CSS via CDN
+- Supabase Authentication, banco de dados PostgreSQL e Row Level Security (RLS)
+- SweetAlert2 para confirmações e mensagens
+- Lucide Icons
 - Leaflet e tiles do OpenStreetMap
-- SweetAlert2 e Lucide Icons
+- Git e GitHub para versionamento; GitHub Pages para publicação
+
+## Organização do repositório
+
+```text
+HYLA/
+├── assets/
+│   ├── demo-occurrences/   # Ilustrações dos relatos fictícios
+│   └── hyla-mark.svg       # Marca do projeto
+├── css/
+│   ├── auth.css            # Estilos da tela de acesso
+│   └── dashboard.css       # Estilos do painel e das telas internas
+├── js/
+│   ├── auth.js             # Cadastro, login e recuperação de acesso
+│   ├── dashboard.js        # Painel, ocorrências, categorias e locais
+│   └── supabase.js         # Inicialização do cliente Supabase
+├── supabase/
+│   ├── functions/          # Edge Functions, incluindo administração
+│   └── *.sql               # Scripts de estrutura, políticas e dados
+├── index.html              # Entrada, login e cadastro
+├── dashboard.html          # Aplicação após autenticação
+├── README.md
+└── design_system.md
+```
+
+## Principais funcionalidades
+
+- Cadastro de conta, login, logout e recuperação de senha com Supabase Authentication.
+- Controle de acesso a páginas e ações restritas; políticas RLS protegem os dados.
+- Três cadastros integrados com persistência no Supabase: ocorrências, categorias e locais.
+- Operações de inclusão, consulta, edição e exclusão, respeitando permissões e vínculos entre registros.
+- Inclusão opcional de foto em ocorrências, armazenada no Supabase Storage.
+- Mapa comunitário, busca e filtros por status, categoria e localização.
+- Visão geral com indicadores e análises de ocorrências por status, categoria e município.
+- Layout responsivo e mensagens de confirmação, sucesso e erro.
 
 ## Executar localmente
 
-Abra `index.html` com a extensão Live Server no VS Code. Para iniciar o servidor pela linha de comando na pasta do projeto:
+1. Configure o projeto Supabase e execute os scripts SQL indicados na seção **Estado atual**.
+2. Confira a configuração do cliente em `js/supabase.js`.
+3. Na raiz do projeto, inicie um servidor local. Por exemplo:
 
 ```powershell
 python -m http.server 5500
 ```
 
-Depois, acesse <http://127.0.0.1:5500>.
+4. Acesse <http://127.0.0.1:5500> e entre ou crie uma conta.
+5. Para autenticação local, permita `http://127.0.0.1:5500/**` e `http://localhost:5500/**` em **Authentication → URL Configuration** no Supabase.
 
 ## Estado atual
 
-Login, cadastro e operações de ocorrências usam Supabase. A aplicação possui três cadastros relacionados: ocorrências, categorias e locais. Categorias e locais são vinculados aos relatos por chaves estrangeiras; cada cadastro permite incluir, consultar, editar e excluir quando não há ocorrências relacionadas. A chave publishable fica em `js/supabase.js` e é apropriada para uso no navegador quando as políticas RLS estão ativas. Nunca coloque uma chave `secret`/`service_role` ou a senha do banco no frontend.
+Login, cadastro e operações de dados usam Supabase. A aplicação possui três cadastros relacionados: ocorrências, categorias e locais. Eles oferecem inclusão, consulta, edição e exclusão de acordo com as permissões; categorias e locais vinculados a ocorrências não podem ser excluídos, preservando o histórico. As ocorrências se relacionam com categorias e locais por chaves estrangeiras. A chave publishable fica em `js/supabase.js` e é apropriada para uso no navegador quando as políticas RLS estão ativas. Nunca coloque uma chave `secret`/`service_role` ou a senha do banco no frontend.
 
 Antes de testar, execute `supabase/national-coverage.sql`, `supabase/user-administration.sql`, `supabase/occurrence-images.sql`, `supabase/occurrence-lifecycle.sql` e `supabase/occurrence-catalogs.sql`, nessa ordem, no SQL Editor do Supabase. A administração configura os perfis e as políticas; a migração de imagens cria o bucket público e atualiza os exemplos; o ciclo de vida configura arquivamento e exclusão autorizada; e os cadastros criam categorias e locais, associam ocorrências existentes e habilitam a edição segura. Os relatos e suas imagens ficam públicos; não inclua dados pessoais nem localização privada.
 
-Para autenticação local, adicione `http://127.0.0.1:5500/**` e `http://localhost:5500/**` à lista de URLs de redirecionamento em **Authentication → URL Configuration**. Configure também a URL do GitHub Pages ao publicar.
+Configure também a URL do GitHub Pages em **Authentication → URL Configuration**. Para recuperação de acesso, permita a URL `https://foxmount.github.io/HYLA/index.html?flow=recovery` (e a URL local correspondente).
 
 ### Administração e apresentação
 
@@ -46,8 +105,6 @@ supabase login
 supabase link --project-ref rnfdliedxxmjakcgkhfc
 supabase functions deploy admin-users
 ```
-
-O fluxo de recuperação requer que a URL `https://foxmount.github.io/HYLA/index.html?flow=recovery` (e a URL local correspondente) esteja permitida em **Authentication → URL Configuration**.
 
 Depois de publicar a função e entrar com a conta root, abra **Administração → Preparar demonstração**. O HYLA cria três contas fictícias (`Ana Souza`, `Bruno Lima` e `Carla Mendes`) e seis ocorrências com status, categorias e cidades diferentes. As contas usam endereços não destinados a receber e-mail (`@hyla.example.com`), são confirmadas pelo servidor e não precisam de caixa postal. Senhas fortes e aleatórias aparecem somente na confirmação; salve-as antes de fechar. Ao preparar a demonstração novamente, as senhas são redefinidas e exibidas outra vez. Os relatos têm títulos e descrições naturais, ilustrações próprias e um selo discreto “Exemplo” na lista.
 
