@@ -104,7 +104,21 @@ const MapThemeControl = L.Control.extend({
     try { saved = localStorage.getItem('hyla-map-theme') || 'dark'; } catch {}
     apply(saved === 'light');
     L.DomEvent.disableClickPropagation(button);
-    L.DomEvent.on(button, 'click', () => apply(!canvas.classList.contains('map-light')));
+    L.DomEvent.on(button, 'click', () => {
+      const toLight = !canvas.classList.contains('map-light');
+      if (canvas.querySelector('.map-sky')) return;
+      if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        apply(toLight);
+        return;
+      }
+      const sky = document.createElement('div');
+      sky.className = `map-sky ${toLight ? 'to-light' : 'to-dark'}`;
+      sky.style.setProperty('--r', `${Math.round(canvas.offsetHeight * 0.62)}px`);
+      sky.innerHTML = '<div class="map-orbit"><span class="map-sun"></span><span class="map-moon"></span></div>';
+      canvas.append(sky);
+      setTimeout(() => apply(toLight), 800);
+      setTimeout(() => sky.remove(), 1850);
+    });
     return button;
   }
 });

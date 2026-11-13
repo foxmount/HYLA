@@ -1233,3 +1233,19 @@
 .hyla-dashboard .notification-list .dot { flex: none; width: 7px; height: 7px; margin-top: 6px; border-radius: 999px; background: var(--hyla-neon); }
 .hyla-dashboard .notification-list li:not(.unread) .dot { background: var(--hyla-line); }
 .hyla-dashboard .notification-list small { display: block; color: var(--hyla-muted); font-size: 11px; }
+
+/* Sun / moon "earth turning" transition when switching the map theme */
+.hyla-dashboard .map-sky { position: absolute; inset: 0; z-index: 650; overflow: hidden; pointer-events: none; animation: map-sky-fade 1.8s ease-in-out forwards; }
+.hyla-dashboard .map-sky.to-light { background: linear-gradient(to top, #ff9a3c 0%, #ffd27f 22%, #9fd8f5 60%, #3f8fd8 100%); }
+.hyla-dashboard .map-sky.to-dark { background: linear-gradient(to top, #6b2f6b 0%, #2a1d5c 30%, #0c0f2a 65%, #03040c 100%); }
+.hyla-dashboard .map-sky.to-dark::before { content: ""; position: absolute; inset: 0; background-image: radial-gradient(1.5px 1.5px at 12% 18%, #fff 50%, transparent 51%), radial-gradient(1px 1px at 28% 42%, #fff 50%, transparent 51%), radial-gradient(2px 2px at 46% 12%, #fff 50%, transparent 51%), radial-gradient(1px 1px at 63% 30%, #fff 50%, transparent 51%), radial-gradient(1.5px 1.5px at 78% 16%, #fff 50%, transparent 51%), radial-gradient(1px 1px at 88% 44%, #fff 50%, transparent 51%), radial-gradient(1.5px 1.5px at 35% 24%, #fff 50%, transparent 51%), radial-gradient(1px 1px at 70% 8%, #fff 50%, transparent 51%); animation: map-stars 1.8s ease-in-out forwards; }
+.hyla-dashboard .map-orbit { position: absolute; left: 50%; top: 100%; width: 0; height: 0; animation: map-orbit 1.8s cubic-bezier(.65, 0, .35, 1) forwards; }
+.hyla-dashboard .map-sky.to-light .map-orbit { --from: 180deg; --to: 360deg; }
+.hyla-dashboard .map-sky.to-dark .map-orbit { --from: 0deg; --to: 180deg; }
+.hyla-dashboard .map-orbit > span { position: absolute; left: 0; top: 0; border-radius: 50%; }
+.hyla-dashboard .map-sun { width: 84px; height: 84px; margin: -42px; transform: rotate(0deg) translateY(calc(var(--r) * -1)); background: radial-gradient(circle at 40% 40%, #fff7c2, #ffd23f 45%, #ff9f1c); box-shadow: 0 0 40px 14px rgb(255 200 60 / 65%), 0 0 120px 40px rgb(255 170 40 / 35%); }
+.hyla-dashboard .map-moon { width: 70px; height: 70px; margin: -35px; transform: rotate(180deg) translateY(calc(var(--r) * -1)); background: radial-gradient(circle at 35% 35%, #fffef5, #e7e3cf 60%, #c9c3a8); box-shadow: inset -12px -8px 0 rgb(0 0 0 / 12%), 0 0 30px 8px rgb(230 235 255 / 45%); }
+@keyframes map-orbit { from { transform: rotate(var(--from)); } to { transform: rotate(var(--to)); } }
+@keyframes map-sky-fade { 0% { opacity: 0; } 25% { opacity: 1; } 75% { opacity: 1; } 100% { opacity: 0; } }
+@keyframes map-stars { 0%, 30% { opacity: 0; } 70%, 100% { opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { .hyla-dashboard .map-sky { display: none; } }
