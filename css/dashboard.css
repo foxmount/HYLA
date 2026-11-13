@@ -1247,3 +1247,6 @@
 @keyframes map-orbit { from { transform: rotate(var(--from)); } to { transform: rotate(var(--to)); } }
 @keyframes map-sky-fade { 0% { opacity: 0; } 25% { opacity: 1; } 75% { opacity: 1; } 100% { opacity: 0; } }
 @keyframes map-stars { 0%, 30% { opacity: 0; } 70%, 100% { opacity: 1; } }
+.hyla-dashboard .archive-toggle { position: relative; }
+.hyla-dashboard .archive-toggle::after { content: attr(data-tip); position: absolute; top: calc(100% + 8px); right: 0; z-index: 900; width: 260px; border: 1px solid var(--hyla-line); border-radius: 8px; padding: 9px 11px; color: var(--hyla-text); background: #0d100f; box-shadow: 0 10px 30px rgb(0 0 0 / 45%); font-size: 11px; font-weight: 400; line-height: 1.5; white-space: normal; opacity: 0; transform: translateY(-4px); pointer-events: none; transition: opacity .18s, transform .18s; }
+.hyla-dashboard .archive-toggle:hover::after, .hyla-dashboard .archive-toggle:focus-within::after { opacity: 1; transform: translateY(0); }
