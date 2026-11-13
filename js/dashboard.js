@@ -1535,19 +1535,27 @@ reportForm.addEventListener('submit', async (event) => {
 
     const selectedCategory = categories.find((category) => category.id === formData.get('category_id'));
     const selectedPlace = places.find((place) => place.id === formData.get('place_id'));
-    if (!selectedCategory || !selectedPlace) {
-      throw new Error('Selecione uma categoria e um local cadastrados.');
+    if (!selectedCategory) {
+      throw new Error('Selecione uma categoria.');
     }
+    if (!latitudeValue || !longitudeValue) {
+      throw new Error('Confirme a posição no mapa: clique em buscar o endereço e escolha um resultado, ou use o GPS.');
+    }
+    const field = (name) => (formData.get(name) || '').toString().trim();
 
     const reportValues = {
       title: formData.get('title').trim(),
       description: formData.get('description').trim(),
       category: selectedCategory.name,
       category_id: selectedCategory.id,
-      place_id: selectedPlace.id,
-      neighborhood: selectedPlace.neighborhood,
-      city: selectedPlace.city,
-      state: selectedPlace.state,
+      place_id: selectedPlace?.id || null,
+      postal_code: field('postal_code') || null,
+      street: field('street'),
+      street_number: field('street_number') || null,
+      complement: field('complement') || null,
+      neighborhood: field('neighborhood'),
+      city: field('city'),
+      state: field('state').toUpperCase(),
       latitude: latitudeValue ? Number(latitudeValue) : null,
       longitude: longitudeValue ? Number(longitudeValue) : null,
       image_url: imageUrl
