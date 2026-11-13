@@ -362,7 +362,8 @@
           <label for="report-title" class="mb-1.5 block text-sm font-medium text-slate-700">Título</label>
           <input id="report-title" name="title" required maxlength="80" placeholder="Ex.: Buraco na Rua das Flores" class="h-11 w-full rounded-lg border border-slate-300 px-3 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100">
         </div>
-        <div class="hidden">
+        <button id="toggle-saved-place" type="button" class="saved-place-toggle"><i data-lucide="map-pin" class="h-3.5 w-3.5"></i>Usar local salvo</button>
+        <div id="saved-place-wrapper" class="hidden">
           <label for="report-place" class="mb-1.5 block text-sm font-medium text-slate-700">Preencher a partir de um local salvo <span class="font-normal text-slate-400">(opcional)</span></label>
           <select id="report-place" name="place_id" class="h-11 w-full rounded-lg border border-slate-300 bg-white px-3 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100">
             <option value="">Digite um endereço ou selecione um local salvo</option>

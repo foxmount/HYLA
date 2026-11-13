@@ -1800,3 +1800,7 @@ async function initializeDashboard() {
 switchPage('map');
 initializeDashboard().catch((error) => showDatabaseError(error, 'Não foi possível iniciar o painel'));
 window.addEventListener('load', () => map.invalidateSize());
+
+document.getElementById('toggle-saved-place').addEventListener('click', () => {
+  document.getElementById('saved-place-wrapper').classList.toggle('hidden');
+});

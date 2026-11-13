@@ -1212,3 +1212,5 @@
 .hyla-dashboard .location-status { margin-top: 10px; border: 1px solid var(--hyla-line); border-radius: 8px; padding: 8px 10px; font-size: 12px; line-height: 1.5; color: var(--hyla-text); }
 .hyla-dashboard .report-form-error { flex-basis: 100%; margin-bottom: 8px; border: 1px solid #ff6b6b; border-radius: 8px; padding: 8px 10px; color: #ffb3b3; background: rgb(255 80 80 / 10%); font-size: 12px; line-height: 1.5; }
 .hyla-dashboard .report-form-error.hidden { display: none; }
+.hyla-dashboard .saved-place-toggle { display: inline-flex; align-items: center; gap: 6px; justify-self: start; width: fit-content; border: 0; padding: 0; color: var(--hyla-muted); background: none; font-size: 12px; cursor: pointer; }
+.hyla-dashboard .saved-place-toggle:hover { color: var(--hyla-neon); }
