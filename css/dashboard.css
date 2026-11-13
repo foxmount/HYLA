@@ -1210,3 +1210,5 @@
 .hyla-dashboard .address-candidate-list .candidate-sub { display: block; font-size: 11px; opacity: .7; }
 .hyla-dashboard .address-candidate-list button[aria-pressed="true"] .candidate-main::after { content: "  ✓ Selecionado"; color: var(--hyla-neon); font-size: 11px; }
 .hyla-dashboard .location-status { margin-top: 10px; border: 1px solid var(--hyla-line); border-radius: 8px; padding: 8px 10px; font-size: 12px; line-height: 1.5; color: var(--hyla-text); }
+.hyla-dashboard .report-form-error { flex-basis: 100%; margin-bottom: 8px; border: 1px solid #ff6b6b; border-radius: 8px; padding: 8px 10px; color: #ffb3b3; background: rgb(255 80 80 / 10%); font-size: 12px; line-height: 1.5; }
+.hyla-dashboard .report-form-error.hidden { display: none; }

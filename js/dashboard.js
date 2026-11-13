@@ -1528,8 +1528,22 @@ document.getElementById('use-current-location').addEventListener('click', () => 
   );
 });
 
+function showReportFormError(message) {
+  const box = document.getElementById('report-form-error');
+  box.textContent = message || '';
+  box.classList.toggle('hidden', !message);
+  if (message) box.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+}
+
+reportForm.addEventListener('invalid', (event) => {
+  const field = event.target;
+  const label = reportForm.querySelector(`label[for="${field.id}"]`)?.textContent.replace(/(.*)/, '').trim() || field.name;
+  showReportFormError(`Preencha o campo obrigatório: ${label}.`);
+}, true);
+
 reportForm.addEventListener('submit', async (event) => {
   event.preventDefault();
+  showReportFormError('');
   const submitButton = reportForm.querySelector('[type="submit"]');
   submitButton.disabled = true;
   const formData = new FormData(reportForm);
@@ -1665,6 +1679,7 @@ reportForm.addEventListener('submit', async (event) => {
         console.error('Não foi possível remover a foto após falha ao salvar a ocorrência', cleanupError);
       }
     }
+    showReportFormError(`Não foi possível enviar: ${error.message || error}`);
     showDatabaseError(error, reportId ? 'Não foi possível atualizar a ocorrência' : 'Não foi possível registrar a ocorrência');
   } finally {
     submitButton.disabled = false;
