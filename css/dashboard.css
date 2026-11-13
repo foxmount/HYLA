@@ -138,6 +138,13 @@
 .hyla-dashboard #report-dialog .bg-slate-50 { background: #0d100f !important; }
 .hyla-dashboard #report-dialog .bg-amber-50 { color: #e6ff67 !important; }
 
+.hyla-dashboard .address-candidate-list { display: grid; gap: 6px; margin-top: 10px; }
+.hyla-dashboard .address-candidate-list:empty { display: none; }
+.hyla-dashboard .address-candidate-list button { width: 100%; border: 1px solid var(--hyla-line); border-radius: 8px; padding: 9px 10px; color: var(--hyla-text); background: #111513; text-align: left; font-size: 11px; line-height: 1.5; cursor: pointer; }
+.hyla-dashboard .address-candidate-list button:hover,
+.hyla-dashboard .address-candidate-list button:focus-visible { border-color: var(--hyla-neon); background: var(--hyla-neon-soft); outline: none; }
+.hyla-dashboard .address-candidate-list button[aria-pressed="true"] { border-color: var(--hyla-neon); }
+
 .hyla-dashboard #mobile-menu { background: #0e1010 !important; border-color: var(--hyla-line) !important; }
 .hyla-dashboard #mobile-menu a:hover,
 .hyla-dashboard #mobile-menu button:hover { background: #1a1e1b !important; }

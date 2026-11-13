@@ -345,7 +345,7 @@
     </div>
   </div>
 
-  <dialog id="report-dialog" class="w-[calc(100%-2rem)] max-w-lg rounded-2xl p-0 shadow-2xl backdrop:bg-slate-900/50">
+  <dialog id="report-dialog" class="w-[calc(100%-2rem)] max-w-2xl rounded-2xl p-0 shadow-2xl backdrop:bg-slate-900/50">
     <form id="report-form">
       <input id="report-id" name="id" type="hidden">
       <div class="flex items-start justify-between border-b border-slate-100 px-6 py-5">
@@ -362,32 +362,74 @@
           <label for="report-title" class="mb-1.5 block text-sm font-medium text-slate-700">Título</label>
           <input id="report-title" name="title" required maxlength="80" placeholder="Ex.: Buraco na Rua das Flores" class="h-11 w-full rounded-lg border border-slate-300 px-3 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100">
         </div>
-        <div class="grid gap-4 sm:grid-cols-2">
-          <div>
-            <label for="report-category" class="mb-1.5 block text-sm font-medium text-slate-700">Categoria</label>
+        <div>
+          <label for="report-place" class="mb-1.5 block text-sm font-medium text-slate-700">Preencher a partir de um local salvo <span class="font-normal text-slate-400">(opcional)</span></label>
+          <select id="report-place" name="place_id" class="h-11 w-full rounded-lg border border-slate-300 bg-white px-3 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100">
+            <option value="">Digite um endereço ou selecione um local salvo</option>
+          </select>
+          <p id="report-place-hint" class="mt-1 text-xs text-slate-500">Os locais salvos ajudam a preencher o endereço; a localização no mapa precisa ser confirmada à parte.</p>
+        </div>
+        <div class="rounded-xl border border-slate-200 p-4">
+          <h3 class="text-sm font-semibold text-slate-800">Endereço da ocorrência</h3>
+          <p class="mt-1 text-xs leading-5 text-slate-500">Informe onde o problema está, não necessariamente onde você está.</p>
+          <div class="mt-4 grid gap-3 sm:grid-cols-2">
+            <div class="sm:col-span-2">
+              <label for="report-postal-code" class="mb-1.5 block text-sm font-medium text-slate-700">CEP <span class="font-normal text-slate-400">(opcional)</span></label>
+              <div class="flex gap-2">
+                <input id="report-postal-code" name="postal_code" inputmode="numeric" autocomplete="postal-code" maxlength="9" placeholder="00000-000" class="h-11 min-w-0 flex-1 rounded-lg border border-slate-300 px-3 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100">
+                <button id="lookup-postal-code" type="button" class="shrink-0 rounded-lg border border-slate-300 px-3 text-sm font-medium text-slate-700 hover:bg-slate-50">Buscar CEP</button>
+              </div>
+            </div>
+            <div class="sm:col-span-2">
+              <label for="report-street" class="mb-1.5 block text-sm font-medium text-slate-700">Rua / logradouro</label>
+              <input id="report-street" name="street" required maxlength="160" autocomplete="street-address" placeholder="Ex.: Rua das Flores" class="h-11 w-full rounded-lg border border-slate-300 px-3 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100">
+            </div>
+            <div>
+              <label for="report-street-number" class="mb-1.5 block text-sm font-medium text-slate-700">Número <span class="font-normal text-slate-400">(ou S/N)</span></label>
+              <input id="report-street-number" name="street_number" maxlength="20" placeholder="Ex.: 120" class="h-11 w-full rounded-lg border border-slate-300 px-3 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100">
+            </div>
+            <div>
+              <label for="report-complement" class="mb-1.5 block text-sm font-medium text-slate-700">Complemento <span class="font-normal text-slate-400">(opcional)</span></label>
+              <input id="report-complement" name="complement" maxlength="100" placeholder="Ex.: esquina com a Rua A" class="h-11 w-full rounded-lg border border-slate-300 px-3 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100">
+            </div>
+            <div>
+              <label for="report-neighborhood" class="mb-1.5 block text-sm font-medium text-slate-700">Bairro</label>
+              <input id="report-neighborhood" name="neighborhood" required maxlength="60" autocomplete="address-level3" placeholder="Ex.: Centro" class="h-11 w-full rounded-lg border border-slate-300 px-3 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100">
+            </div>
+            <div>
+              <label for="report-city" class="mb-1.5 block text-sm font-medium text-slate-700">Cidade</label>
+              <input id="report-city" name="city" required maxlength="100" autocomplete="address-level2" placeholder="Ex.: Itu" class="h-11 w-full rounded-lg border border-slate-300 px-3 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100">
+            </div>
+            <div>
+              <label for="report-state" class="mb-1.5 block text-sm font-medium text-slate-700">Estado (UF)</label>
+              <select id="report-state" name="state" required autocomplete="address-level1" class="h-11 w-full rounded-lg border border-slate-300 bg-white px-3 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100">
+                <option value="">Selecione</option><option>AC</option><option>AL</option><option>AP</option><option>AM</option><option>BA</option><option>CE</option><option>DF</option><option>ES</option><option>GO</option><option>MA</option><option>MT</option><option>MS</option><option>MG</option><option>PA</option><option>PB</option><option>PR</option><option>PE</option><option>PI</option><option>RJ</option><option>RN</option><option>RS</option><option>RO</option><option>RR</option><option>SC</option><option>SP</option><option>SE</option><option>TO</option>
+              </select>
+            </div>
+          </div>
+        </div>
+        <div class="rounded-xl border border-slate-200 p-4">
+          <h3 class="text-sm font-semibold text-slate-800">Posição no mapa</h3>
+          <p class="mt-1 text-xs leading-5 text-slate-500">Escolha um resultado de endereço ou use o GPS somente se estiver no local da ocorrência.</p>
+          <div class="mt-3 flex flex-wrap gap-2">
+            <button id="geocode-address" type="button" class="inline-flex items-center gap-2 rounded-lg border border-slate-300 px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50">
+              <i data-lucide="search" class="h-4 w-4"></i>Buscar endereço no mapa
+            </button>
+            <button id="use-current-location" type="button" class="inline-flex items-center gap-2 rounded-lg border border-slate-300 px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50">
+              <i data-lucide="locate-fixed" class="h-4 w-4"></i>Usar GPS neste local
+            </button>
+          </div>
+          <div id="report-geo-candidates" class="address-candidate-list" aria-live="polite"></div>
+          <input id="report-latitude" name="latitude" type="hidden">
+          <input id="report-longitude" name="longitude" type="hidden">
+          <p id="location-status" class="mt-2 text-xs text-slate-500">Confirme um resultado ou use o GPS; sem coordenadas não é possível posicionar o relato no mapa.</p>
+          <p class="mt-2 text-xs leading-5 text-slate-500">A busca envia o endereço digitado ao serviço Nominatim/OpenStreetMap. O CEP pode ser consultado no ViaCEP. Endereço e coordenadas do relato serão públicos.</p>
+        </div>
+        <div>
+          <label for="report-category" class="mb-1.5 block text-sm font-medium text-slate-700">Categoria</label>
             <select id="report-category" name="category_id" required class="h-11 w-full rounded-lg border border-slate-300 bg-white px-3 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100">
               <option value="">Selecione</option>
             </select>
-          </div>
-          <div>
-            <label for="report-place" class="mb-1.5 block text-sm font-medium text-slate-700">Bairro / município</label>
-            <select id="report-place" name="place_id" required class="h-11 w-full rounded-lg border border-slate-300 bg-white px-3 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100">
-              <option value="">Selecione um local</option>
-            </select>
-          </div>
-        </div>
-        <p id="report-place-hint" class="text-xs text-slate-500">Cadastre um bairro na seção Locais para usá-lo em um relato.</p>
-        <input id="report-neighborhood" name="neighborhood" type="hidden">
-        <input id="report-city" name="city" type="hidden">
-        <input id="report-state" name="state" type="hidden">
-        <div>
-          <input id="report-latitude" name="latitude" type="hidden">
-          <input id="report-longitude" name="longitude" type="hidden">
-          <button id="use-current-location" type="button" class="inline-flex items-center gap-2 rounded-lg border border-slate-300 px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50">
-            <i data-lucide="map-pin" class="h-4 w-4"></i>
-            Usar minha localização (opcional)
-          </button>
-          <p id="location-status" class="mt-1.5 text-xs text-slate-500">A localização cadastrada no bairro será usada no mapa, se disponível.</p>
         </div>
         <div>
           <label for="report-image" class="mb-1.5 block text-sm font-medium text-slate-700">Foto da ocorrência <span class="font-normal text-slate-400">(opcional)</span></label>
@@ -399,7 +441,7 @@
           <label for="report-description" class="mb-1.5 block text-sm font-medium text-slate-700">Descrição</label>
           <textarea id="report-description" name="description" required maxlength="500" rows="3" placeholder="Descreva brevemente o problema e sua localização." class="w-full rounded-lg border border-slate-300 px-3 py-2.5 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"></textarea>
         </div>
-        <p class="rounded-lg bg-amber-50 px-3 py-2 text-xs leading-5 text-amber-800">Os relatos e, se você autorizar, suas coordenadas ficam visíveis publicamente. Informe a cidade e a UF corretas e não inclua dados pessoais no relato.</p>
+        <p class="rounded-lg bg-amber-50 px-3 py-2 text-xs leading-5 text-amber-800">O endereço, a foto e as coordenadas do relato ficam visíveis publicamente. Não informe dados pessoais nem endereços residenciais privados.</p>
       </div>
       <div class="flex justify-end gap-3 border-t border-slate-100 bg-slate-50 px-6 py-4">
         <button id="cancel-report" type="button" class="rounded-lg px-4 py-2.5 text-sm font-semibold text-slate-600 hover:bg-slate-200">Cancelar</button>
@@ -426,14 +468,20 @@
   <dialog id="place-dialog" class="catalog-dialog w-[calc(100%-2rem)] max-w-lg rounded-2xl p-0 shadow-2xl">
     <form id="place-form">
       <input id="place-id" type="hidden">
-      <div class="catalog-dialog-heading"><div><h2 id="place-dialog-title">Novo local</h2><p>Cadastre o bairro e o município para usar nos relatos.</p></div><button type="button" data-close-dialog="place-dialog" aria-label="Fechar"><i data-lucide="x" class="h-4 w-4"></i></button></div>
+      <div class="catalog-dialog-heading"><div><h2 id="place-dialog-title">Novo local</h2><p>Salve um endereço para preencher ocorrências com mais rapidez.</p></div><button type="button" data-close-dialog="place-dialog" aria-label="Fechar"><i data-lucide="x" class="h-4 w-4"></i></button></div>
       <div class="catalog-dialog-body">
+        <label>CEP <span>(opcional)</span><input id="place-postal-code" inputmode="numeric" maxlength="9" placeholder="00000-000"></label>
+        <label>Rua / logradouro<input id="place-street" required minlength="2" maxlength="160" placeholder="Ex.: Rua das Flores"></label>
+        <div class="catalog-dialog-grid">
+          <label>Número <span>(ou S/N)</span><input id="place-street-number" maxlength="20" placeholder="Ex.: 120"></label>
+          <label>Complemento <span>(opcional)</span><input id="place-complement" maxlength="100" placeholder="Ex.: próximo à praça"></label>
+        </div>
         <label>Bairro<input id="place-neighborhood" required minlength="2" maxlength="60" placeholder="Ex.: Centro"></label>
         <div class="catalog-dialog-grid">
           <label>Município<input id="place-city" required minlength="2" maxlength="100" placeholder="Ex.: Itu"></label>
           <label>Estado (UF)<select id="place-state" required><option value="">Selecione</option><option>AC</option><option>AL</option><option>AP</option><option>AM</option><option>BA</option><option>CE</option><option>DF</option><option>ES</option><option>GO</option><option>MA</option><option>MT</option><option>MS</option><option>MG</option><option>PA</option><option>PB</option><option>PR</option><option>PE</option><option>PI</option><option>RJ</option><option>RN</option><option>RS</option><option>RO</option><option>RR</option><option>SC</option><option>SP</option><option>SE</option><option>TO</option></select></label>
         </div>
-        <p class="catalog-coordinate-note">Coordenadas são opcionais. Sem elas, o relato ainda aparece nas listas e análises.</p>
+        <p class="catalog-coordinate-note">CEP, rua, número e complemento ajudam a preencher relatos. As coordenadas aqui são apenas referência do local; confirme a posição no formulário de cada ocorrência.</p>
         <div class="catalog-dialog-grid">
           <label>Latitude<input id="place-latitude" type="number" step="any" min="-90" max="90" placeholder="-23.2645"></label>
           <label>Longitude<input id="place-longitude" type="number" step="any" min="-180" max="180" placeholder="-47.2992"></label>

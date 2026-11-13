@@ -54,6 +54,8 @@ const reportCategorySelect = document.getElementById('report-category');
 const reportPlaceSelect = document.getElementById('report-place');
 const reportDialog = document.getElementById('report-dialog');
 const reportForm = document.getElementById('report-form');
+let geocodeCandidates = [];
+let nextGeocodeRequestAt = 0;
 let originalReportImageUrl = null;
 const notificationButton = document.getElementById('notifications-button');
 const profileButton = document.getElementById('profile-button');
@@ -129,6 +131,18 @@ function formatRelativeTime(timestamp) {
   return elapsedDays === 1 ? 'Ontem' : `Há ${elapsedDays} dias`;
 }
 
+function formatReportAddress(report) {
+  const streetLine = [report.street, report.streetNumber].filter(Boolean).join(', ');
+  const cityLine = [report.city, report.state].filter(Boolean).join(' - ');
+  return [
+    streetLine,
+    report.complement,
+    report.neighborhood,
+    cityLine,
+    report.postalCode ? `CEP ${report.postalCode}` : ''
+  ].filter(Boolean).join(' · ');
+}
+
 function showDatabaseError(error, title = 'Erro ao acessar as ocorrências') {
   console.error(title, error);
   document.getElementById('connection-status').textContent = 'Erro de conexão';
@@ -147,7 +161,7 @@ function renderReports() {
     const matchesState = reportStateFilter.value === 'all' || report.state === reportStateFilter.value;
     const matchesCity = reportCityFilter.value === 'all' || `${report.state}|${report.city}` === reportCityFilter.value;
     const matchesCategory = reportCategoryFilter.value === 'all' || report.categoryId === reportCategoryFilter.value;
-    const searchableText = `${report.title} ${report.category} ${report.neighborhood} ${report.city} ${report.state}`.toLocaleLowerCase('pt-BR');
+    const searchableText = `${report.title} ${report.category} ${report.street} ${report.streetNumber} ${report.complement} ${report.postalCode} ${report.neighborhood} ${report.city} ${report.state}`.toLocaleLowerCase('pt-BR');
     return (includeArchivedReports.checked || !report.isArchived) &&
       matchesStatus && matchesState && matchesCity && matchesCategory &&
       searchableText.includes(searchTerm) && (!showMine || (report.mine && !report.isDemo));
@@ -167,7 +181,7 @@ function renderReports() {
             ${report.mine ? '<span class="rounded-full bg-blue-50 px-2 py-0.5 text-[10px] font-semibold text-blue-700">Seu relato</span>' : ''}
             ${report.isDemo ? '<span class="demo-report-badge">Exemplo</span>' : ''}
           </div>
-          <p class="mt-1 text-xs text-slate-500">${escapeHTML(report.category)} <span class="mx-1 text-slate-300">·</span> ${escapeHTML(report.neighborhood)} <span class="mx-1 text-slate-300">·</span> ${escapeHTML(report.city)} - ${escapeHTML(report.state)} <span class="mx-1 text-slate-300">·</span> ${escapeHTML(report.time)}</p>
+          <p class="mt-1 text-xs text-slate-500">${escapeHTML(report.category)} <span class="mx-1 text-slate-300">·</span> ${escapeHTML(formatReportAddress(report))} <span class="mx-1 text-slate-300">·</span> ${escapeHTML(report.time)}</p>
         </div>
         ${report.imageUrl ? `<img class="report-list-image" src="${escapeHTML(report.imageUrl)}" alt="Foto: ${escapeHTML(report.title)}" loading="lazy">` : ''}
         ${report.isArchived ? '<span class="archived-report-badge">Arquivada</span>' : ''}
@@ -389,7 +403,7 @@ function renderMapMarkers() {
     const matchesCity = mapCityFilter.value === 'all' || `${report.state}|${report.city}` === mapCityFilter.value;
     const matchesStatus = mapStatusFilter.value === 'all' || report.status === mapStatusFilter.value;
     const matchesCategory = mapCategoryFilter.value === 'all' || report.categoryId === mapCategoryFilter.value;
-    const searchableText = `${report.title} ${report.category} ${report.neighborhood} ${report.city} ${report.state}`.toLocaleLowerCase('pt-BR');
+    const searchableText = `${report.title} ${report.category} ${report.street} ${report.streetNumber} ${report.complement} ${report.postalCode} ${report.neighborhood} ${report.city} ${report.state}`.toLocaleLowerCase('pt-BR');
     return (includeArchivedMap.checked || !report.isArchived) &&
       matchesState && matchesCity && matchesStatus && matchesCategory && searchableText.includes(searchTerm);
   });
@@ -421,7 +435,7 @@ function renderMapMarkers() {
           </div>
           <h3 class="map-popup-title">${escapeHTML(report.title)}</h3>
           ${report.description ? `<p class="map-popup-description">${escapeHTML(report.description)}</p>` : ''}
-          <div class="map-popup-location"><i data-lucide="map-pin" class="h-3.5 w-3.5"></i><span>${escapeHTML(report.neighborhood)} · ${escapeHTML(report.city)} - ${escapeHTML(report.state)}</span></div>
+          <div class="map-popup-location"><i data-lucide="map-pin" class="h-3.5 w-3.5"></i><span>${escapeHTML(formatReportAddress(report))}</span></div>
           <div class="map-popup-footer">
             <span>${escapeHTML(report.time)}</span>
             ${report.isDemo ? '<span class="map-popup-example">Exemplo</span>' : ''}
@@ -595,15 +609,15 @@ function updateCatalogSelects() {
   });
 
   const selectedPlace = reportPlaceSelect.value;
-  reportPlaceSelect.replaceChildren(new Option('Selecione um local', ''));
+  reportPlaceSelect.replaceChildren(new Option('Digite um endereço ou selecione um local salvo', ''));
   places.forEach((place) => reportPlaceSelect.add(new Option(
-    `${place.neighborhood} · ${place.city} - ${place.state}`,
+    `${[place.street, place.streetNumber].filter(Boolean).join(', ') || place.neighborhood} · ${place.city} - ${place.state}`,
     place.id
   )));
   reportPlaceSelect.value = places.some((place) => place.id === selectedPlace) ? selectedPlace : '';
   document.getElementById('report-place-hint').textContent = places.length
-    ? 'Selecione o bairro relacionado à ocorrência.'
-    : 'Cadastre primeiro um bairro na seção Locais para usá-lo em um relato.';
+    ? 'Selecione um endereço salvo para preencher os campos; confirme as coordenadas da ocorrência separadamente.'
+    : 'Você pode digitar o endereço ou cadastrá-lo na seção Locais para reutilizá-lo.';
 }
 
 function renderCatalogs() {
@@ -644,7 +658,7 @@ function renderCatalogs() {
         <span class="catalog-card-icon"><i data-lucide="map-pin" class="h-5 w-5"></i></span>
         <div class="catalog-card-copy">
           <div class="catalog-card-title-row"><h3>${escapeHTML(place.neighborhood)}</h3>${place.createdBy === null ? '<span class="catalog-shared-badge">Compartilhado</span>' : ''}</div>
-          <p>${escapeHTML(place.city)} · ${escapeHTML(stateName)} (${escapeHTML(place.state)})</p>
+          <p>${escapeHTML([place.street, place.streetNumber].filter(Boolean).join(', ') || 'Endereço antigo sem rua cadastrada')}${place.complement ? ` · ${escapeHTML(place.complement)}` : ''} · ${escapeHTML(place.neighborhood)} · ${escapeHTML(place.city)} · ${escapeHTML(stateName)} (${escapeHTML(place.state)})${place.postalCode ? ` · CEP ${escapeHTML(place.postalCode)}` : ''}</p>
           <small>${usage} ${usage === 1 ? 'ocorrência vinculada' : 'ocorrências vinculadas'} · ${hasCoordinates ? 'Localização no mapa' : 'Sem coordenadas'}</small>
         </div>
         ${canManage ? `<div class="catalog-actions"><button type="button" class="catalog-action" data-edit-place="${escapeHTML(place.id)}" aria-label="Editar local ${escapeHTML(place.neighborhood)}" title="Editar"><i data-lucide="pencil" class="h-4 w-4"></i></button><button type="button" class="catalog-action is-danger" data-delete-place="${escapeHTML(place.id)}" aria-label="Excluir local ${escapeHTML(place.neighborhood)}" title="Excluir"><i data-lucide="trash-2" class="h-4 w-4"></i></button></div>` : ''}
@@ -659,7 +673,7 @@ function renderCatalogs() {
 async function loadCatalogs() {
   const [categoryResult, placeResult] = await Promise.all([
     supabaseClient.from('hyla_categories').select('id,created_by,name,description,created_at').order('name'),
-    supabaseClient.from('hyla_places').select('id,created_by,neighborhood,city,state,latitude,longitude,created_at').order('state').order('city').order('neighborhood')
+    supabaseClient.from('hyla_places').select('id,created_by,postal_code,street,street_number,complement,neighborhood,city,state,latitude,longitude,created_at').order('state').order('city').order('neighborhood')
   ]);
   if (categoryResult.error) throw categoryResult.error;
   if (placeResult.error) throw placeResult.error;
@@ -674,6 +688,10 @@ async function loadCatalogs() {
   places.splice(0, places.length, ...placeResult.data.map((row) => ({
     id: row.id,
     createdBy: row.created_by,
+    postalCode: row.postal_code,
+    street: row.street,
+    streetNumber: row.street_number,
+    complement: row.complement,
     neighborhood: row.neighborhood,
     city: row.city,
     state: row.state,
@@ -697,6 +715,10 @@ function openCategoryDialog(category = null) {
 function openPlaceDialog(place = null) {
   placeForm.reset();
   placeIdInput.value = place?.id || '';
+  document.getElementById('place-postal-code').value = place?.postalCode || '';
+  document.getElementById('place-street').value = place?.street || '';
+  document.getElementById('place-street-number').value = place?.streetNumber || '';
+  document.getElementById('place-complement').value = place?.complement || '';
   document.getElementById('place-neighborhood').value = place?.neighborhood || '';
   document.getElementById('place-city').value = place?.city || '';
   document.getElementById('place-state').value = place?.state || '';
@@ -771,6 +793,10 @@ placeForm.addEventListener('submit', async (event) => {
   const latitude = document.getElementById('place-latitude').value;
   const longitude = document.getElementById('place-longitude').value;
   const values = {
+    postal_code: document.getElementById('place-postal-code').value.trim() || null,
+    street: document.getElementById('place-street').value.trim(),
+    street_number: document.getElementById('place-street-number').value.trim() || null,
+    complement: document.getElementById('place-complement').value.trim() || null,
     neighborhood: document.getElementById('place-neighborhood').value.trim(),
     city: document.getElementById('place-city').value.trim(),
     state: document.getElementById('place-state').value,
@@ -876,22 +902,28 @@ document.querySelectorAll('[data-close-dialog]').forEach((button) => {
 
 reportPlaceSelect.addEventListener('change', () => {
   const place = places.find((item) => item.id === reportPlaceSelect.value);
-  document.getElementById('report-neighborhood').value = place?.neighborhood || '';
-  document.getElementById('report-city').value = place?.city || '';
-  document.getElementById('report-state').value = place?.state || '';
+  if (!place) return;
+  document.getElementById('report-postal-code').value = place.postalCode || '';
+  document.getElementById('report-street').value = place.street || '';
+  document.getElementById('report-street-number').value = place.streetNumber || '';
+  document.getElementById('report-complement').value = place.complement || '';
+  document.getElementById('report-neighborhood').value = place.neighborhood || '';
+  document.getElementById('report-city').value = place.city || '';
+  document.getElementById('report-state').value = place.state || '';
+  document.getElementById('report-latitude').value = '';
+  document.getElementById('report-longitude').value = '';
+  geocodeCandidates = [];
+  document.getElementById('report-geo-candidates').replaceChildren();
   if (place) {
-    document.getElementById('report-latitude').value = place.latitude ?? '';
-    document.getElementById('report-longitude').value = place.longitude ?? '';
-    document.getElementById('location-status').textContent = place.latitude !== null
-      ? 'A localização cadastrada para este bairro será exibida no mapa.'
-      : 'Este local não tem coordenadas; o relato aparecerá nas listas e análises.';
+    document.getElementById('location-status').textContent =
+      'Endereço preenchido. Confirme a posição da ocorrência pela busca ou GPS; as coordenadas do local salvo não serão usadas automaticamente.';
   }
 });
 
 async function loadReports() {
   const { data, error } = await supabaseClient
     .from('ocorrencias')
-    .select('id,user_id,title,description,category,category_id,place_id,neighborhood,city,state,status,latitude,longitude,image_url,created_at,resolved_at,is_demo')
+    .select('id,user_id,title,description,category,category_id,place_id,postal_code,street,street_number,complement,neighborhood,city,state,status,latitude,longitude,image_url,created_at,resolved_at,is_demo')
     .order('created_at', { ascending: false });
 
   if (error) throw error;
@@ -911,6 +943,10 @@ async function loadReports() {
       categoryId: row.category_id,
       placeId: row.place_id,
       category: category?.name || row.category,
+      postalCode: row.postal_code || place?.postalCode || '',
+      street: row.street || place?.street || '',
+      streetNumber: row.street_number || place?.streetNumber || '',
+      complement: row.complement || place?.complement || '',
       neighborhood: place?.neighborhood || row.neighborhood,
       city: place?.city || row.city,
       state: place?.state || row.state,
@@ -1131,6 +1167,10 @@ function openReportDialog(report = null) {
   document.getElementById('report-title').value = report?.title || '';
   reportCategorySelect.value = report?.categoryId || '';
   reportPlaceSelect.value = report?.placeId || '';
+  document.getElementById('report-postal-code').value = report?.postalCode || '';
+  document.getElementById('report-street').value = report?.street || '';
+  document.getElementById('report-street-number').value = report?.streetNumber || '';
+  document.getElementById('report-complement').value = report?.complement || '';
   document.getElementById('report-neighborhood').value = report?.neighborhood || '';
   document.getElementById('report-city').value = report?.city || '';
   document.getElementById('report-state').value = report?.state || '';
@@ -1146,8 +1186,8 @@ function openReportDialog(report = null) {
     reportImagePreview.classList.remove('hidden');
   }
   document.getElementById('location-status').textContent = report?.location
-    ? 'A localização atual está associada a esta ocorrência.'
-    : 'Sem localização precisa, o relato aparece na lista, mas não recebe marcador no mapa.';
+    ? 'A posição salva foi carregada. Se você alterar o endereço, será necessário confirmar as coordenadas novamente.'
+    : 'Confirme um resultado da busca ou use o GPS no local da ocorrência antes de salvar.';
   reportDialog.showModal();
 }
 
@@ -1158,7 +1198,7 @@ function closeReportDialog() {
   document.getElementById('report-dialog-title').textContent = 'Registrar ocorrência';
   document.getElementById('save-report-label').textContent = 'Enviar relato';
   document.getElementById('location-status').textContent =
-    'Sem localização precisa, o relato aparece na lista, mas não recebe marcador no mapa.';
+    'Confirme um resultado da busca ou use o GPS no local da ocorrência antes de salvar.';
 }
 
 document.getElementById('close-report-dialog').addEventListener('click', closeReportDialog);
@@ -1175,7 +1215,24 @@ function clearReportImagePreview() {
   reportImagePreview.classList.add('hidden');
 }
 
-reportForm.addEventListener('reset', clearReportImagePreview);
+function clearGeocodeCandidates() {
+  geocodeCandidates = [];
+  document.getElementById('report-geo-candidates').replaceChildren();
+}
+
+function invalidateReportLocation() {
+  document.getElementById('report-latitude').value = '';
+  document.getElementById('report-longitude').value = '';
+  document.getElementById('location-status').textContent =
+    'O endereço mudou. Confirme novamente a posição no mapa ou use o GPS no local da ocorrência.';
+  clearGeocodeCandidates();
+  reportPlaceSelect.value = '';
+}
+
+reportForm.addEventListener('reset', () => {
+  clearReportImagePreview();
+  clearGeocodeCandidates();
+});
 reportImageInput.addEventListener('change', () => {
   clearReportImagePreview();
   const [file] = reportImageInput.files || [];
@@ -1205,6 +1262,156 @@ reportImageInput.addEventListener('change', () => {
   reportImagePreview.classList.remove('hidden');
 });
 
+[
+  'report-postal-code',
+  'report-street',
+  'report-street-number',
+  'report-complement',
+  'report-neighborhood',
+  'report-city',
+  'report-state'
+].forEach((id) => {
+  const field = document.getElementById(id);
+  field.addEventListener('input', invalidateReportLocation);
+  field.addEventListener('change', invalidateReportLocation);
+});
+
+document.getElementById('lookup-postal-code').addEventListener('click', async (event) => {
+  const button = event.currentTarget;
+  const postalCode = document.getElementById('report-postal-code').value.replace(/\D/g, '');
+  if (!/^\d{8}$/.test(postalCode)) {
+    await Swal.fire({
+      icon: 'warning',
+      title: 'CEP inválido',
+      text: 'Informe os 8 números do CEP para fazer a consulta.',
+      confirmButtonColor: '#d7ff00'
+    });
+    return;
+  }
+
+  button.disabled = true;
+  try {
+    const response = await fetch(`https://viacep.com.br/ws/${postalCode}/json/`);
+    if (!response.ok) throw new Error(`O serviço ViaCEP respondeu com o status ${response.status}.`);
+    const result = await response.json();
+    if (result.erro) throw new Error('O CEP não foi encontrado no ViaCEP.');
+
+    document.getElementById('report-postal-code').value = result.cep || `${postalCode.slice(0, 5)}-${postalCode.slice(5)}`;
+    if (result.logradouro) document.getElementById('report-street').value = result.logradouro;
+    if (result.bairro) document.getElementById('report-neighborhood').value = result.bairro;
+    if (result.localidade) document.getElementById('report-city').value = result.localidade;
+    if (result.uf) document.getElementById('report-state').value = result.uf;
+    invalidateReportLocation();
+    document.getElementById('location-status').textContent =
+      'Endereço preenchido pelo ViaCEP. Confira os dados e confirme a posição no mapa.';
+  } catch (error) {
+    console.error('Não foi possível consultar o CEP', error);
+    await Swal.fire({
+      icon: 'error',
+      title: 'Não foi possível buscar o CEP',
+      text: error.message || 'Verifique sua conexão e tente novamente.',
+      confirmButtonColor: '#d7ff00'
+    });
+  } finally {
+    button.disabled = false;
+  }
+});
+
+document.getElementById('geocode-address').addEventListener('click', async (event) => {
+  const button = event.currentTarget;
+  const street = document.getElementById('report-street').value.trim();
+  const streetNumber = document.getElementById('report-street-number').value.trim();
+  const neighborhood = document.getElementById('report-neighborhood').value.trim();
+  const city = document.getElementById('report-city').value.trim();
+  const state = document.getElementById('report-state').value;
+  const postalCode = document.getElementById('report-postal-code').value.trim();
+  const locationStatus = document.getElementById('location-status');
+  if (!street || !neighborhood || !city || !state) {
+    locationStatus.textContent = 'Preencha rua, bairro, cidade e UF antes de buscar no mapa.';
+    return;
+  }
+
+  const waitTime = nextGeocodeRequestAt - Date.now();
+  if (waitTime > 0) {
+    locationStatus.textContent = 'Aguarde um segundo antes de fazer outra busca no mapa.';
+    return;
+  }
+
+  const query = [
+    [street, streetNumber].filter(Boolean).join(', '),
+    neighborhood,
+    city,
+    state,
+    postalCode,
+    'Brasil'
+  ].filter(Boolean).join(', ');
+  const parameters = new URLSearchParams({
+    q: query,
+    format: 'jsonv2',
+    addressdetails: '1',
+    countrycodes: 'br',
+    limit: '5'
+  });
+
+  button.disabled = true;
+  locationStatus.textContent = 'Buscando endereços correspondentes...';
+  clearGeocodeCandidates();
+  nextGeocodeRequestAt = Date.now() + 1100;
+  try {
+    const response = await fetch(`https://nominatim.openstreetmap.org/search?${parameters}`);
+    if (!response.ok) throw new Error(`O serviço de mapas respondeu com o status ${response.status}.`);
+    const results = await response.json();
+    if (!Array.isArray(results)) throw new Error('O serviço de mapas retornou uma resposta inválida.');
+    geocodeCandidates = results.filter((result) =>
+      result.address?.country_code?.toLocaleLowerCase('en') === 'br' &&
+      Number.isFinite(Number(result.lat)) &&
+      Number.isFinite(Number(result.lon)) &&
+      Number(result.lat) >= -90 && Number(result.lat) <= 90 &&
+      Number(result.lon) >= -180 && Number(result.lon) <= 180
+    );
+
+    const candidatesList = document.getElementById('report-geo-candidates');
+    geocodeCandidates.forEach((candidate, index) => {
+      const option = document.createElement('button');
+      option.type = 'button';
+      option.dataset.geocodeCandidate = String(index);
+      option.setAttribute('aria-pressed', 'false');
+      option.textContent = candidate.display_name;
+      candidatesList.append(option);
+    });
+    locationStatus.textContent = geocodeCandidates.length
+      ? 'Escolha o resultado que corresponde ao local exato da ocorrência.'
+      : 'Nenhum resultado foi encontrado. Confira o endereço ou use o GPS no local da ocorrência.';
+  } catch (error) {
+    console.error('Não foi possível buscar o endereço no mapa', error);
+    locationStatus.textContent = 'A busca no mapa falhou. Confira sua conexão ou tente novamente mais tarde.';
+    await Swal.fire({
+      icon: 'error',
+      title: 'Não foi possível buscar o endereço',
+      text: error.message || 'O serviço de mapas está indisponível. Você pode tentar novamente ou usar o GPS.',
+      confirmButtonColor: '#d7ff00'
+    });
+  } finally {
+    button.disabled = false;
+  }
+});
+
+document.getElementById('report-geo-candidates').addEventListener('click', (event) => {
+  if (!(event.target instanceof Element)) return;
+  const candidateButton = event.target.closest('[data-geocode-candidate]');
+  if (!candidateButton) return;
+  const candidate = geocodeCandidates[Number(candidateButton.dataset.geocodeCandidate)];
+  if (!candidate) return;
+
+  document.getElementById('report-latitude').value = candidate.lat;
+  document.getElementById('report-longitude').value = candidate.lon;
+  document.querySelectorAll('[data-geocode-candidate]').forEach((button) => {
+    button.setAttribute('aria-pressed', String(button === candidateButton));
+  });
+  document.getElementById('location-status').textContent =
+    'Posição selecionada. Confira se o endereço exibido corresponde exatamente à ocorrência; as coordenadas serão públicas.';
+});
+
 document.getElementById('use-current-location').addEventListener('click', () => {
   const locationStatus = document.getElementById('location-status');
   if (!navigator.geolocation) {
@@ -1217,14 +1424,14 @@ document.getElementById('use-current-location').addEventListener('click', () => 
     ({ coords }) => {
       document.getElementById('report-latitude').value = coords.latitude;
       document.getElementById('report-longitude').value = coords.longitude;
-      locationStatus.textContent = 'Localização adicionada. Ela ficará visível no mapa público.';
+      locationStatus.textContent = `GPS selecionado (precisão estimada de ${Math.round(coords.accuracy)} m). Confirme que você está no local da ocorrência; as coordenadas serão públicas.`;
     },
     (error) => {
       locationStatus.textContent = error.code === error.PERMISSION_DENIED
-        ? 'Permissão de localização negada. Você ainda pode enviar o relato sem marcador.'
-        : 'Não foi possível obter a localização. Você ainda pode enviar o relato sem marcador.';
+        ? 'Permissão de localização negada. Faça a busca pelo endereço para posicionar o relato.'
+        : 'Não foi possível obter a localização. Faça a busca pelo endereço para posicionar o relato.';
     },
-    { enableHighAccuracy: false, timeout: 10000, maximumAge: 60000 }
+    { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
   );
 });
 
