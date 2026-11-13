@@ -1433,9 +1433,31 @@ document.getElementById('geocode-address').addEventListener('click', async (even
       option.textContent = candidate.display_name;
       candidatesList.append(option);
     });
-    locationStatus.textContent = geocodeCandidates.length
-      ? 'Escolha o resultado que corresponde ao local exato da ocorrência.'
-      : 'Nenhum resultado foi encontrado. Confira o endereço ou use o GPS no local da ocorrência.';
+    if (geocodeCandidates.length) {
+      locationStatus.textContent = 'Escolha o resultado que corresponde ao local exato da ocorrência.';
+    } else if (city) {
+      await new Promise((resolve) => setTimeout(resolve, 1100));
+      const cityParameters = new URLSearchParams({
+        q: [city, state, 'Brasil'].filter(Boolean).join(', '),
+        format: 'jsonv2',
+        countrycodes: 'br',
+        limit: '1'
+      });
+      nextGeocodeRequestAt = Date.now() + 1100;
+      const cityResponse = await fetch(`https://nominatim.openstreetmap.org/search?${cityParameters}`);
+      const cityResults = cityResponse.ok ? await cityResponse.json() : [];
+      if (Array.isArray(cityResults) && cityResults[0]) {
+        document.getElementById('report-latitude').value = cityResults[0].lat;
+        document.getElementById('report-longitude').value = cityResults[0].lon;
+        updatePickMap();
+        if (pickMap) pickMap.setZoom(14);
+        locationStatus.textContent = 'A rua não foi encontrada no mapa. O pino foi colocado na cidade: arraste-o ou clique no mapa no local exato da ocorrência.';
+      } else {
+        locationStatus.textContent = 'Nenhum resultado foi encontrado. Confira a cidade e a UF e tente novamente.';
+      }
+    } else {
+      locationStatus.textContent = 'Nenhum resultado foi encontrado. Confira o endereço e tente novamente.';
+    }
   } catch (error) {
     console.error('Não foi possível buscar o endereço no mapa', error);
     locationStatus.textContent = 'A busca no mapa falhou. Confira sua conexão ou tente novamente mais tarde.';
