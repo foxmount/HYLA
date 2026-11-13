@@ -92,7 +92,7 @@ fetch('assets/brazil.geo.json')
     L.polygon(ring, { color: '#d7ff00', weight: 1.5, opacity: 0.8, fill: false, interactive: false }).addTo(map);
     const brazilBounds = L.latLngBounds(ring);
     map.invalidateSize();
-    map.setMinZoom(Math.max(3, map.getBoundsZoom(brazilBounds) - 1));
+    map.setMinZoom(4);
     map.setMaxBounds(brazilBounds.pad(0.15));
     map.options.maxBoundsViscosity = 1;
   })
