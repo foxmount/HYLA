@@ -84,6 +84,28 @@ const map = L.map('city-map-canvas', {
 });
 const mapMarkers = L.layerGroup().addTo(map);
 
+// Light/dark map toggle (dark is the default CSS filter on the tiles).
+const MapThemeControl = L.Control.extend({
+  options: { position: 'topright' },
+  onAdd() {
+    const button = L.DomUtil.create('button', 'map-theme-toggle');
+    button.type = 'button';
+    const canvas = document.getElementById('city-map-canvas');
+    const apply = (light) => {
+      canvas.classList.toggle('map-light', light);
+      button.textContent = light ? '🌙 Mapa escuro' : '☀️ Mapa claro';
+      try { localStorage.setItem('hyla-map-theme', light ? 'light' : 'dark'); } catch {}
+    };
+    let saved = 'dark';
+    try { saved = localStorage.getItem('hyla-map-theme') || 'dark'; } catch {}
+    apply(saved === 'light');
+    L.DomEvent.disableClickPropagation(button);
+    L.DomEvent.on(button, 'click', () => apply(!canvas.classList.contains('map-light')));
+    return button;
+  }
+});
+map.addControl(new MapThemeControl());
+
 // Outline Brazil and keep the map inside the country.
 fetch('assets/brazil.geo.json')
   .then((response) => response.json())

@@ -1214,3 +1214,6 @@
 .hyla-dashboard .report-form-error.hidden { display: none; }
 .hyla-dashboard .saved-place-toggle { display: inline-flex; align-items: center; gap: 6px; justify-self: start; width: fit-content; border: 0; padding: 0; color: var(--hyla-muted); background: none; font-size: 12px; cursor: pointer; }
 .hyla-dashboard .saved-place-toggle:hover { color: var(--hyla-neon); }
+.hyla-dashboard .map-light .leaflet-tile-pane { filter: none; }
+.hyla-dashboard .map-theme-toggle { display: inline-flex; align-items: center; gap: 6px; border: 1px solid var(--hyla-line); border-radius: 8px; padding: 7px 10px; color: var(--hyla-text); background: rgb(13 16 15 / 90%); font-size: 12px; font-weight: 600; cursor: pointer; }
+.hyla-dashboard .map-theme-toggle:hover { border-color: var(--hyla-neon); }
