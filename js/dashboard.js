@@ -107,10 +107,6 @@ const MapThemeControl = L.Control.extend({
     L.DomEvent.on(button, 'click', () => {
       const toLight = !canvas.classList.contains('map-light');
       if (canvas.querySelector('.map-sky')) return;
-      if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-        apply(toLight);
-        return;
-      }
       const sky = document.createElement('div');
       sky.className = `map-sky ${toLight ? 'to-light' : 'to-dark'}`;
       sky.style.setProperty('--r', `${Math.round(canvas.offsetHeight * 0.62)}px`);

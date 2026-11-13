@@ -1222,7 +1222,6 @@
 .hyla-dashboard .map-light .leaflet-tile-pane { filter: invert(0%) hue-rotate(0deg) brightness(100%) contrast(100%); }
 .hyla-dashboard .map-theme-toggle svg { animation: map-theme-spin .5s ease; }
 @keyframes map-theme-spin { from { transform: rotate(-120deg) scale(.4); opacity: 0; } to { transform: rotate(0) scale(1); opacity: 1; } }
-@media (prefers-reduced-motion: reduce) { .hyla-dashboard #city-map-canvas .leaflet-tile-pane, .hyla-dashboard .map-theme-toggle svg { transition: none; animation: none; } }
 .hyla-dashboard #notifications-button { position: relative; }
 .hyla-dashboard .notification-badge { position: absolute; top: -4px; right: -4px; min-width: 17px; height: 17px; border-radius: 999px; padding: 0 4px; color: #0a0c0c; background: var(--hyla-neon); font-size: 10px; font-weight: 700; line-height: 17px; text-align: center; }
 .hyla-dashboard .notification-badge.hidden, .hyla-dashboard .popover-empty.hidden { display: none; }
@@ -1248,4 +1247,3 @@
 @keyframes map-orbit { from { transform: rotate(var(--from)); } to { transform: rotate(var(--to)); } }
 @keyframes map-sky-fade { 0% { opacity: 0; } 25% { opacity: 1; } 75% { opacity: 1; } 100% { opacity: 0; } }
 @keyframes map-stars { 0%, 30% { opacity: 0; } 70%, 100% { opacity: 1; } }
-@media (prefers-reduced-motion: reduce) { .hyla-dashboard .map-sky { display: none; } }
