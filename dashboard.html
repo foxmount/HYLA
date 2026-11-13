@@ -410,7 +410,12 @@
         </div>
         <div class="rounded-xl border border-slate-200 p-4">
           <h3 class="text-sm font-semibold text-slate-800">Posição no mapa</h3>
-          <p class="mt-1 text-xs leading-5 text-slate-500">Escolha um resultado de endereço ou use o GPS somente se estiver no local da ocorrência.</p>
+          <ol class="location-steps">
+            <li><span>1</span>Preencha o endereço acima e clique em <strong>Buscar endereço no mapa</strong>.</li>
+            <li><span>2</span>Na lista, clique no endereço que corresponde à ocorrência.</li>
+            <li><span>3</span>Confira o pino no mapa e, se precisar, arraste-o até o ponto exato.</li>
+          </ol>
+          <p class="mt-2 text-xs leading-5 text-slate-500">Está no local agora? Use o <strong>GPS</strong> (funciona melhor no celular).</p>
           <div class="mt-3 flex flex-wrap gap-2">
             <button id="geocode-address" type="button" class="inline-flex items-center gap-2 rounded-lg border border-slate-300 px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50">
               <i data-lucide="search" class="h-4 w-4"></i>Buscar endereço no mapa
@@ -424,8 +429,8 @@
           <input id="report-longitude" name="longitude" type="hidden">
           <div id="report-pick-map" class="mt-3 hidden h-56 w-full overflow-hidden rounded-lg border border-slate-300"></div>
           <p id="report-pick-hint" class="mt-1 hidden text-xs text-slate-500">Arraste o pino ou clique no mapa para ajustar a posição exata da ocorrência.</p>
-          <p id="location-status" class="mt-2 text-xs text-slate-500">Confirme um resultado ou use o GPS; sem coordenadas não é possível posicionar o relato no mapa.</p>
-          <p class="mt-2 text-xs leading-5 text-slate-500">A busca envia o endereço digitado ao serviço Nominatim/OpenStreetMap. O CEP pode ser consultado no ViaCEP. Endereço e coordenadas do relato serão públicos.</p>
+          <p id="location-status" class="location-status">Nenhuma posição definida ainda. Sem ela não é possível enviar o relato.</p>
+          <p class="mt-2 text-[11px] leading-5 text-slate-400">A busca envia o endereço digitado ao serviço Nominatim/OpenStreetMap. O CEP pode ser consultado no ViaCEP. Endereço e coordenadas do relato serão públicos.</p>
         </div>
         <div>
           <label for="report-category" class="mb-1.5 block text-sm font-medium text-slate-700">Categoria</label>

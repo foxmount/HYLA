@@ -1202,3 +1202,11 @@
   .hyla-dashboard .metric-value { margin-top: 14px; font-size: 28px; }
   .hyla-dashboard .metric-note { font-size: 8px; }
 }
+
+.hyla-dashboard .location-steps { display: grid; gap: 6px; margin-top: 10px; font-size: 12px; line-height: 1.5; color: var(--hyla-text); }
+.hyla-dashboard .location-steps li { display: flex; gap: 8px; align-items: flex-start; }
+.hyla-dashboard .location-steps span { flex: none; display: inline-grid; place-items: center; width: 20px; height: 20px; border-radius: 999px; background: var(--hyla-neon); color: #0a0c0c; font-size: 11px; font-weight: 700; }
+.hyla-dashboard .address-candidate-list .candidate-main { display: block; font-size: 13px; font-weight: 600; }
+.hyla-dashboard .address-candidate-list .candidate-sub { display: block; font-size: 11px; opacity: .7; }
+.hyla-dashboard .address-candidate-list button[aria-pressed="true"] .candidate-main::after { content: "  ✓ Selecionado"; color: var(--hyla-neon); font-size: 11px; }
+.hyla-dashboard .location-status { margin-top: 10px; border: 1px solid var(--hyla-line); border-radius: 8px; padding: 8px 10px; font-size: 12px; line-height: 1.5; color: var(--hyla-text); }

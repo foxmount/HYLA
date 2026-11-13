@@ -1430,11 +1430,26 @@ document.getElementById('geocode-address').addEventListener('click', async (even
       option.type = 'button';
       option.dataset.geocodeCandidate = String(index);
       option.setAttribute('aria-pressed', 'false');
-      option.textContent = candidate.display_name;
+      const address = candidate.address || {};
+      const stateCode = (address['ISO3166-2-lvl4'] || '').replace('BR-', '');
+      const main = document.createElement('span');
+      main.className = 'candidate-main';
+      main.textContent = [
+        [address.road || candidate.name, address.house_number].filter(Boolean).join(', '),
+        address.suburb || address.neighbourhood || address.city_district
+      ].filter(Boolean).join(' · ') || candidate.display_name;
+      const sub = document.createElement('span');
+      sub.className = 'candidate-sub';
+      sub.textContent = [
+        [address.city || address.town || address.village || address.municipality, stateCode].filter(Boolean).join(' - '),
+        address.postcode ? `CEP ${address.postcode}` : ''
+      ].filter(Boolean).join(' · ');
+      option.title = candidate.display_name;
+      option.append(main, sub);
       candidatesList.append(option);
     });
     if (geocodeCandidates.length) {
-      locationStatus.textContent = 'Escolha o resultado que corresponde ao local exato da ocorrência.';
+      locationStatus.textContent = 'Encontramos ' + geocodeCandidates.length + (geocodeCandidates.length === 1 ? ' endereço' : ' endereços') + '. Clique no que corresponde à ocorrência.';
     } else if (city) {
       await new Promise((resolve) => setTimeout(resolve, 1100));
       const cityParameters = new URLSearchParams({
@@ -1486,7 +1501,7 @@ document.getElementById('report-geo-candidates').addEventListener('click', (even
     button.setAttribute('aria-pressed', String(button === candidateButton));
   });
   document.getElementById('location-status').textContent =
-    'Posição selecionada. Confira se o endereço exibido corresponde exatamente à ocorrência; as coordenadas serão públicas.';
+    '✓ Posição definida. Confira o pino no mapa abaixo e arraste-o se precisar ajustar.';
 });
 
 document.getElementById('use-current-location').addEventListener('click', () => {
