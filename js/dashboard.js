@@ -1,3 +1,13 @@
+// Show alerts above any open <dialog> (modal dialogs sit in the top layer and would hide them).
+const originalSwalFire = Swal.fire.bind(Swal);
+Swal.fire = (options, ...rest) => {
+  const openDialog = document.querySelector('dialog[open]');
+  if (openDialog && options && typeof options === 'object' && !options.target) {
+    return originalSwalFire({ ...options, target: openDialog }, ...rest);
+  }
+  return originalSwalFire(options, ...rest);
+};
+
 const reports = [];
 const categories = [];
 const places = [];
