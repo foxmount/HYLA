@@ -62,16 +62,18 @@
             <div class="topbar-menu">
               <button id="notifications-button" type="button" class="topbar-icon-button" aria-label="Notificações" title="Notificações" aria-haspopup="dialog" aria-expanded="false" aria-controls="notifications-panel">
                 <i data-lucide="bell" class="h-4 w-4" aria-hidden="true"></i>
+                <span id="notifications-badge" class="notification-badge hidden"></span>
               </button>
               <section id="notifications-panel" class="topbar-popover hidden" role="dialog" aria-labelledby="notifications-heading">
                 <div class="popover-heading">
                   <span class="popover-icon"><i data-lucide="bell" class="h-4 w-4" aria-hidden="true"></i></span>
                   <div><h2 id="notifications-heading" tabindex="-1">Notificações</h2><p>Central de atualizações</p></div>
                 </div>
-                <div class="popover-empty">
+                <ul id="notifications-list" class="notification-list"></ul>
+                <div id="notifications-empty" class="popover-empty">
                   <i data-lucide="bell-off" class="h-5 w-5" aria-hidden="true"></i>
-                  <p>As notificações ainda não estão habilitadas.</p>
-                  <small>Este painel não envia alertas automáticos por enquanto.</small>
+                  <p>Nada novo por aqui.</p>
+                  <small>Você será avisado quando seus relatos mudarem de status ou surgirem novos relatos.</small>
                 </div>
               </section>
             </div>

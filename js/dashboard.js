@@ -1005,6 +1005,7 @@ async function loadReports() {
       isArchived: row.status === 'resolved' && row.resolved_at !== null &&
         Date.now() - new Date(row.resolved_at).getTime() >= 30 * 24 * 60 * 60 * 1000,
       time: formatRelativeTime(row.created_at),
+      createdAt: row.created_at,
       mine: row.user_id === currentUser.id,
       location: latitude !== null && longitude !== null ? [latitude, longitude] : null
     };
@@ -1014,6 +1015,7 @@ async function loadReports() {
   updateLocationFilters();
   updateDashboardOverview();
   renderReports();
+  renderNotifications();
 }
 
 function switchPage(page) {
@@ -1843,4 +1845,98 @@ window.addEventListener('load', () => map.invalidateSize());
 
 document.getElementById('toggle-saved-place').addEventListener('click', () => {
   document.getElementById('saved-place-wrapper').classList.toggle('hidden');
+});
+
+// Notifications: status changes on the user's reports and new community reports since the last visit.
+let notificationItems = [];
+
+function getNotificationState() {
+  try {
+    return JSON.parse(localStorage.getItem(`hyla-notifications-${currentUser.id}`)) || null;
+  } catch {
+    return null;
+  }
+}
+
+function saveNotificationState(state) {
+  try {
+    localStorage.setItem(`hyla-notifications-${currentUser.id}`, JSON.stringify(state));
+  } catch {}
+}
+
+function renderNotifications() {
+  if (!currentUser) return;
+  const state = getNotificationState();
+  if (!state) {
+    saveNotificationState({
+      seenAt: new Date().toISOString(),
+      statuses: Object.fromEntries(reports.filter((report) => report.mine).map((report) => [report.id, report.status]))
+    });
+    notificationItems = [];
+  } else {
+    const fresh = [];
+    reports.forEach((report) => {
+      const previous = state.statuses?.[report.id];
+      if (report.mine && previous && previous !== report.status) {
+        fresh.push({
+          id: `status-${report.id}-${report.status}`,
+          text: `Seu relato "${report.title}" agora está: ${statusDetails[report.status]?.label || report.status}.`,
+          meta: `${report.city} - ${report.state}`
+        });
+      }
+      if (!report.mine && !report.isDemo && report.createdAt && new Date(report.createdAt) > new Date(state.seenAt)) {
+        fresh.push({
+          id: `new-${report.id}`,
+          text: `Novo relato: "${report.title}"`,
+          meta: `${report.category} · ${report.city} - ${report.state} · ${report.time}`
+        });
+      }
+    });
+    let trackedNew = false;
+    reports.forEach((report) => {
+      if (report.mine && !state.statuses?.[report.id]) {
+        state.statuses = { ...state.statuses, [report.id]: report.status };
+        trackedNew = true;
+      }
+    });
+    if (trackedNew) saveNotificationState(state);
+    const known = new Set(notificationItems.map((item) => item.id));
+    notificationItems = [...fresh.filter((item) => !known.has(item.id)).map((item) => ({ ...item, unread: true })), ...notificationItems];
+  }
+
+  const list = document.getElementById('notifications-list');
+  list.replaceChildren(...notificationItems.map((item) => {
+    const li = document.createElement('li');
+    if (item.unread) li.classList.add('unread');
+    const dot = document.createElement('span');
+    dot.className = 'dot';
+    const body = document.createElement('div');
+    body.textContent = item.text;
+    const meta = document.createElement('small');
+    meta.textContent = item.meta;
+    body.append(meta);
+    li.append(dot, body);
+    return li;
+  }));
+  document.getElementById('notifications-empty').classList.toggle('hidden', notificationItems.length > 0);
+  const unread = notificationItems.filter((item) => item.unread).length;
+  const badge = document.getElementById('notifications-badge');
+  badge.textContent = unread > 9 ? '9+' : String(unread);
+  badge.classList.toggle('hidden', unread === 0);
+}
+
+function markNotificationsSeen() {
+  if (!currentUser) return;
+  saveNotificationState({
+    seenAt: new Date().toISOString(),
+    statuses: Object.fromEntries(reports.filter((report) => report.mine).map((report) => [report.id, report.status]))
+  });
+  document.getElementById('notifications-badge').classList.add('hidden');
+}
+
+notificationButton.addEventListener('click', () => {
+  markNotificationsSeen();
+  setTimeout(() => {
+    notificationItems = notificationItems.map((item) => ({ ...item, unread: false }));
+  }, 0);
 });

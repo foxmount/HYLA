@@ -1223,3 +1223,13 @@
 .hyla-dashboard .map-theme-toggle svg { animation: map-theme-spin .5s ease; }
 @keyframes map-theme-spin { from { transform: rotate(-120deg) scale(.4); opacity: 0; } to { transform: rotate(0) scale(1); opacity: 1; } }
 @media (prefers-reduced-motion: reduce) { .hyla-dashboard #city-map-canvas .leaflet-tile-pane, .hyla-dashboard .map-theme-toggle svg { transition: none; animation: none; } }
+.hyla-dashboard #notifications-button { position: relative; }
+.hyla-dashboard .notification-badge { position: absolute; top: -4px; right: -4px; min-width: 17px; height: 17px; border-radius: 999px; padding: 0 4px; color: #0a0c0c; background: var(--hyla-neon); font-size: 10px; font-weight: 700; line-height: 17px; text-align: center; }
+.hyla-dashboard .notification-badge.hidden, .hyla-dashboard .popover-empty.hidden { display: none; }
+.hyla-dashboard .notification-list { display: grid; gap: 4px; max-height: 320px; overflow-y: auto; margin-top: 10px; }
+.hyla-dashboard .notification-list:empty { display: none; }
+.hyla-dashboard .notification-list li { display: flex; gap: 10px; border-radius: 8px; padding: 8px; font-size: 12px; line-height: 1.45; color: var(--hyla-text); }
+.hyla-dashboard .notification-list li.unread { background: var(--hyla-neon-soft); }
+.hyla-dashboard .notification-list .dot { flex: none; width: 7px; height: 7px; margin-top: 6px; border-radius: 999px; background: var(--hyla-neon); }
+.hyla-dashboard .notification-list li:not(.unread) .dot { background: var(--hyla-line); }
+.hyla-dashboard .notification-list small { display: block; color: var(--hyla-muted); font-size: 11px; }
