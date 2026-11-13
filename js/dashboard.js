@@ -84,20 +84,17 @@ const map = L.map('city-map-canvas', {
 });
 const mapMarkers = L.layerGroup().addTo(map);
 
-// Outline Brazil, dim the rest of the world and keep the map inside the country.
+// Outline Brazil and keep the map inside the country.
 fetch('assets/brazil.geo.json')
   .then((response) => response.json())
   .then((geojson) => {
     const ring = geojson.features[0].geometry.coordinates[0].map(([lng, lat]) => [lat, lng]);
-    const world = [[-89, -179], [-89, 179], [89, 179], [89, -179]];
-    const mask = L.polygon([world, ring], { stroke: false, fillColor: '#000', fillOpacity: 0.55, interactive: false }).addTo(map);
     L.polygon(ring, { color: '#d7ff00', weight: 1.5, opacity: 0.8, fill: false, interactive: false }).addTo(map);
-    map.setMaxBounds(L.latLngBounds(ring).pad(0.25));
-    const toggleMask = () => {
-      if (map.getZoom() >= 7) mask.remove(); else mask.addTo(map);
-    };
-    map.on('zoomend', toggleMask);
-    toggleMask();
+    const brazilBounds = L.latLngBounds(ring);
+    map.invalidateSize();
+    map.setMinZoom(Math.max(3, map.getBoundsZoom(brazilBounds) - 1));
+    map.setMaxBounds(brazilBounds.pad(0.15));
+    map.options.maxBoundsViscosity = 1;
   })
   .catch((error) => console.error('Não foi possível carregar o contorno do Brasil', error));
 const MAX_REPORT_IMAGE_SIZE = 5 * 1024 * 1024;
