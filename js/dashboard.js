@@ -661,14 +661,14 @@ function renderCatalogs() {
   document.getElementById('places-list').innerHTML = places.map((place) => {
     const canManage = place.createdBy === currentUser.id || (place.createdBy === null && isAdmin);
     const usage = placeUsage.get(place.id) || 0;
-    const stateName = new Intl.DisplayNames(['pt-BR'], { type: 'region' }).of(place.state) || place.state;
+    const streetLine = [place.street, place.streetNumber].filter(Boolean).join(', ');
     const hasCoordinates = place.latitude !== null && place.longitude !== null;
     return `
       <article class="catalog-card">
         <span class="catalog-card-icon"><i data-lucide="map-pin" class="h-5 w-5"></i></span>
         <div class="catalog-card-copy">
           <div class="catalog-card-title-row"><h3>${escapeHTML(place.neighborhood)}</h3>${place.createdBy === null ? '<span class="catalog-shared-badge">Compartilhado</span>' : ''}</div>
-          <p>${escapeHTML([place.street, place.streetNumber].filter(Boolean).join(', ') || 'Endereço antigo sem rua cadastrada')}${place.complement ? ` · ${escapeHTML(place.complement)}` : ''} · ${escapeHTML(place.neighborhood)} · ${escapeHTML(place.city)} · ${escapeHTML(stateName)} (${escapeHTML(place.state)})${place.postalCode ? ` · CEP ${escapeHTML(place.postalCode)}` : ''}</p>
+          <p>${streetLine ? `${escapeHTML(streetLine)}${place.complement ? ` (${escapeHTML(place.complement)})` : ''} · ` : ''}${escapeHTML(place.neighborhood)} · ${escapeHTML(place.city)} - ${escapeHTML(place.state)}${place.postalCode ? ` · CEP ${escapeHTML(place.postalCode)}` : ''}</p>
           <small>${usage} ${usage === 1 ? 'ocorrência vinculada' : 'ocorrências vinculadas'} · ${hasCoordinates ? 'Localização no mapa' : 'Sem coordenadas'}</small>
         </div>
         ${canManage ? `<div class="catalog-actions"><button type="button" class="catalog-action" data-edit-place="${escapeHTML(place.id)}" aria-label="Editar local ${escapeHTML(place.neighborhood)}" title="Editar"><i data-lucide="pencil" class="h-4 w-4"></i></button><button type="button" class="catalog-action is-danger" data-delete-place="${escapeHTML(place.id)}" aria-label="Excluir local ${escapeHTML(place.neighborhood)}" title="Excluir"><i data-lucide="trash-2" class="h-4 w-4"></i></button></div>` : ''}
