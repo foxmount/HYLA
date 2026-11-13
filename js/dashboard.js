@@ -1189,6 +1189,7 @@ function openReportDialog(report = null) {
     ? 'A posição salva foi carregada. Se você alterar o endereço, será necessário confirmar as coordenadas novamente.'
     : 'Confirme um resultado da busca ou use o GPS no local da ocorrência antes de salvar.';
   reportDialog.showModal();
+  updatePickMap();
 }
 
 function closeReportDialog() {
@@ -1215,6 +1216,48 @@ function clearReportImagePreview() {
   reportImagePreview.classList.add('hidden');
 }
 
+let pickMap = null;
+let pickMarker = null;
+
+function setPickedLocation(lat, lng) {
+  document.getElementById("report-latitude").value = lat.toFixed(6);
+  document.getElementById("report-longitude").value = lng.toFixed(6);
+  document.getElementById("location-status").textContent =
+    "Posição ajustada manualmente. Confira se o pino está no local exato da ocorrência; as coordenadas serão públicas.";
+}
+
+function updatePickMap() {
+  const container = document.getElementById("report-pick-map");
+  const hint = document.getElementById("report-pick-hint");
+  const latText = document.getElementById("report-latitude").value;
+  const lat = Number(latText);
+  const lng = Number(document.getElementById("report-longitude").value);
+  const hasCoords = latText !== "" && Number.isFinite(lat) && Number.isFinite(lng);
+  container.classList.toggle("hidden", !hasCoords);
+  hint.classList.toggle("hidden", !hasCoords);
+  if (!hasCoords) return;
+  if (!pickMap) {
+    pickMap = L.map(container).setView([lat, lng], 18);
+    L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
+      maxZoom: 19,
+      attribution: "&copy; OpenStreetMap"
+    }).addTo(pickMap);
+    pickMarker = L.marker([lat, lng], { draggable: true }).addTo(pickMap);
+    pickMarker.on("dragend", () => {
+      const { lat: newLat, lng: newLng } = pickMarker.getLatLng();
+      setPickedLocation(newLat, newLng);
+    });
+    pickMap.on("click", (event) => {
+      pickMarker.setLatLng(event.latlng);
+      setPickedLocation(event.latlng.lat, event.latlng.lng);
+    });
+  } else {
+    pickMarker.setLatLng([lat, lng]);
+    pickMap.setView([lat, lng], 18);
+  }
+  setTimeout(() => pickMap.invalidateSize(), 50);
+}
+
 function clearGeocodeCandidates() {
   geocodeCandidates = [];
   document.getElementById('report-geo-candidates').replaceChildren();
@@ -1226,6 +1269,7 @@ function invalidateReportLocation() {
   document.getElementById('location-status').textContent =
     'O endereço mudou. Confirme novamente a posição no mapa ou use o GPS no local da ocorrência.';
   clearGeocodeCandidates();
+  updatePickMap();
   reportPlaceSelect.value = '';
 }
 
@@ -1405,6 +1449,7 @@ document.getElementById('report-geo-candidates').addEventListener('click', (even
 
   document.getElementById('report-latitude').value = candidate.lat;
   document.getElementById('report-longitude').value = candidate.lon;
+  updatePickMap();
   document.querySelectorAll('[data-geocode-candidate]').forEach((button) => {
     button.setAttribute('aria-pressed', String(button === candidateButton));
   });
@@ -1424,6 +1469,7 @@ document.getElementById('use-current-location').addEventListener('click', () => 
     ({ coords }) => {
       document.getElementById('report-latitude').value = coords.latitude;
       document.getElementById('report-longitude').value = coords.longitude;
+      updatePickMap();
       locationStatus.textContent = `GPS selecionado (precisão estimada de ${Math.round(coords.accuracy)} m). Confirme que você está no local da ocorrência; as coordenadas serão públicas.`;
     },
     (error) => {
