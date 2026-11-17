@@ -2032,7 +2032,7 @@ function openReportDetails(reportId) {
         <h3>Registro</h3>
         <dl>
           ${row('Criado em', created)}
-          ${row('Autor', report.mine ? 'Você' : 'Outro usuário')}
+          <div><dt>Autor <span class="info-tip" tabindex="0" data-tip="Autor oculto por privacidade. Edição e exclusão restritas ao dono ou admin via RLS." aria-label="Autor oculto por privacidade. Edição e exclusão restritas ao dono ou admin via RLS.">i</span></dt><dd>${report.mine ? 'Você' : 'Outro usuário'}</dd></div>
         </dl>
         ${report.location ? `<a class="detail-link" href="https://www.openstreetmap.org/?mlat=${report.location[0]}&mlon=${report.location[1]}#map=18/${report.location[0]}/${report.location[1]}" target="_blank" rel="noopener">Abrir no OpenStreetMap ↗</a>` : ''}
       </div>

@@ -1270,3 +1270,7 @@
 .report-detail-dialog .detail-link { display: inline-block; margin-top: 16px; color: #d7ff00; font-size: 13px; font-weight: 600; }
 .hyla-dashboard .map-cluster { display: grid; place-items: center; width: 34px; height: 34px; border: 2px solid var(--hyla-neon); border-radius: 999px; color: #0a0c0c; background: var(--hyla-neon); box-shadow: 0 0 0 6px rgb(215 255 0 / 22%), 0 4px 14px rgb(0 0 0 / 45%); font-size: 13px; font-weight: 800; cursor: pointer; transition: transform .15s; }
 .hyla-dashboard .map-cluster:hover { transform: scale(1.1); }
+.info-tip { position: relative; display: inline-grid; place-items: center; width: 14px; height: 14px; margin-left: 4px; border: 1px solid #5a625c; border-radius: 999px; color: #8d968b; font-size: 9px; font-style: italic; font-weight: 700; line-height: 1; vertical-align: 1px; cursor: help; }
+.info-tip:hover, .info-tip:focus { border-color: #d7ff00; color: #d7ff00; outline: none; }
+.info-tip::after { content: attr(data-tip); position: absolute; bottom: calc(100% + 8px); left: -6px; z-index: 10; width: 230px; border: 1px solid #2a302d; border-radius: 8px; padding: 8px 10px; color: #f0f2ed; background: #0d100f; box-shadow: 0 10px 30px rgb(0 0 0 / 45%); font-size: 11px; font-style: normal; font-weight: 400; line-height: 1.5; opacity: 0; pointer-events: none; transition: opacity .15s; }
+.info-tip:hover::after, .info-tip:focus::after { opacity: 1; }
