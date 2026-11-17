@@ -75,6 +75,7 @@ const map = L.map('city-map-canvas', {
   center: [-14.235, -51.9253],
   zoom: 4,
   minZoom: 3,
+  maxZoom: 19,
   scrollWheelZoom: true,
   doubleClickZoom: true,
   touchZoom: true,
