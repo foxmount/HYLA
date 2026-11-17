@@ -129,7 +129,7 @@ fetch('assets/brazil.geo.json')
     const brazilBounds = L.latLngBounds(ring);
     map.invalidateSize();
     map.setMinZoom(4);
-    map.setMaxBounds(brazilBounds.pad(0.15));
+    map.setMaxBounds(brazilBounds.pad(0.4));
     map.options.maxBoundsViscosity = 1;
   })
   .catch((error) => console.error('Não foi possível carregar o contorno do Brasil', error));
@@ -501,9 +501,10 @@ function renderMapMarkers() {
             ${report.isDemo ? '<span class="map-popup-example">Exemplo</span>' : ''}
             ${report.isArchived ? '<span class="map-popup-archived">Arquivada</span>' : ''}
           </div>
+          <button type="button" class="map-popup-details" data-report-detail="${escapeHTML(report.id)}">Ver detalhes</button>
         </div>
       </div>
-    `, { maxWidth: 340, minWidth: 270 });
+    `, { maxWidth: 340, minWidth: 270, autoPanPaddingTopLeft: [20, 70], autoPanPaddingBottomRight: [20, 20] });
     marker.on('popupopen', () => lucide.createIcons());
     mapMarkers.addLayer(marker);
   });
@@ -1949,4 +1950,63 @@ notificationButton.addEventListener('click', () => {
   setTimeout(() => {
     notificationItems = notificationItems.map((item) => ({ ...item, unread: false }));
   }, 0);
+});
+
+// Full report details dialog (opened from map popups).
+function openReportDetails(reportId) {
+  const report = reports.find((item) => item.id === reportId);
+  if (!report) return;
+  const status = statusDetails[report.status] || statusDetails.pending;
+  let dialog = document.getElementById('report-detail-dialog');
+  if (!dialog) {
+    dialog = document.createElement('dialog');
+    dialog.id = 'report-detail-dialog';
+    dialog.className = 'report-detail-dialog';
+    document.body.append(dialog);
+    dialog.addEventListener('click', (event) => {
+      if (event.target === dialog || event.target.closest('[data-close-detail]')) dialog.close();
+    });
+  }
+  const created = report.createdAt
+    ? new Date(report.createdAt).toLocaleString('pt-BR', { dateStyle: 'long', timeStyle: 'short' })
+    : report.time;
+  const row = (label, value) => value ? `<div><dt>${label}</dt><dd>${escapeHTML(String(value))}</dd></div>` : '';
+  const coords = report.location ? `${Number(report.location[0]).toFixed(5)}, ${Number(report.location[1]).toFixed(5)}` : '';
+  dialog.innerHTML = `
+    <article>
+      ${report.imageUrl ? `<img src="${escapeHTML(report.imageUrl)}" alt="Foto da ocorrência: ${escapeHTML(report.title)}">` : ''}
+      <button type="button" class="detail-close" data-close-detail aria-label="Fechar">✕</button>
+      <div class="detail-body">
+        <div class="detail-topline">
+          <span class="map-popup-category">${escapeHTML(report.category)}</span>
+          <span class="map-popup-status map-popup-status-${escapeHTML(report.status)}">${status.label}</span>
+          ${report.isDemo ? '<span class="map-popup-example">Exemplo</span>' : ''}
+          ${report.isArchived ? '<span class="map-popup-archived">Arquivada</span>' : ''}
+        </div>
+        <h2>${escapeHTML(report.title)}</h2>
+        ${report.description ? `<p class="detail-description">${escapeHTML(report.description)}</p>` : ''}
+        <h3>Endereço</h3>
+        <dl>
+          ${row('Rua', [report.street, report.streetNumber].filter(Boolean).join(', '))}
+          ${row('Complemento', report.complement)}
+          ${row('Bairro', report.neighborhood)}
+          ${row('Cidade', `${report.city} - ${report.state}`)}
+          ${row('CEP', report.postalCode)}
+          ${row('Coordenadas', coords)}
+        </dl>
+        <h3>Registro</h3>
+        <dl>
+          ${row('Criado em', created)}
+          ${row('Autor', report.mine ? 'Você' : 'Outro usuário')}
+        </dl>
+        ${report.location ? `<a class="detail-link" href="https://www.openstreetmap.org/?mlat=${report.location[0]}&mlon=${report.location[1]}#map=18/${report.location[0]}/${report.location[1]}" target="_blank" rel="noopener">Abrir no OpenStreetMap ↗</a>` : ''}
+      </div>
+    </article>`;
+  dialog.showModal();
+}
+
+document.addEventListener('click', (event) => {
+  if (!(event.target instanceof Element)) return;
+  const button = event.target.closest('[data-report-detail]');
+  if (button) openReportDetails(button.dataset.reportDetail);
 });

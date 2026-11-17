@@ -1250,3 +1250,21 @@
 .hyla-dashboard .archive-toggle { position: relative; }
 .hyla-dashboard .archive-toggle::after { content: attr(data-tip); position: absolute; top: calc(100% + 8px); right: 0; z-index: 900; width: max-content; max-width: 260px; border: 1px solid var(--hyla-line); border-radius: 8px; padding: 9px 11px; color: var(--hyla-text); background: #0d100f; box-shadow: 0 10px 30px rgb(0 0 0 / 45%); font-size: 11px; font-weight: 400; line-height: 1.5; white-space: normal; opacity: 0; transform: translateY(-4px); pointer-events: none; transition: opacity .18s, transform .18s; }
 .hyla-dashboard .archive-toggle:hover::after, .hyla-dashboard .archive-toggle:focus-within::after { opacity: 1; transform: translateY(0); }
+.hyla-dashboard .map-popup-image, .hyla-dashboard .map-popup-image-placeholder { height: 110px; }
+.hyla-dashboard .map-popup-description { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.hyla-dashboard .map-popup-details { width: 100%; margin-top: 10px; border: 1px solid var(--hyla-neon); border-radius: 8px; padding: 7px; color: #0a0c0c; background: var(--hyla-neon); font-size: 12px; font-weight: 700; cursor: pointer; transition: filter .15s; }
+.hyla-dashboard .map-popup-details:hover { filter: brightness(1.1); }
+.report-detail-dialog { width: min(560px, calc(100% - 32px)); max-height: calc(100vh - 48px); padding: 0; border: 1px solid #2a302d; border-radius: 16px; color: #f0f2ed; background: #121615; box-shadow: 0 30px 80px rgb(0 0 0 / 60%); overflow: auto; }
+.report-detail-dialog::backdrop { background: rgb(0 0 0 / 68%); backdrop-filter: blur(3px); }
+.report-detail-dialog article { position: relative; }
+.report-detail-dialog img { display: block; width: 100%; max-height: 300px; object-fit: cover; }
+.report-detail-dialog .detail-close { position: absolute; top: 10px; right: 10px; width: 32px; height: 32px; border: 0; border-radius: 999px; color: #fff; background: rgb(0 0 0 / 60%); cursor: pointer; }
+.report-detail-dialog .detail-body { padding: 20px 22px 24px; }
+.report-detail-dialog .detail-topline { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.report-detail-dialog h2 { margin-top: 10px; font-size: 20px; font-weight: 700; }
+.report-detail-dialog .detail-description { margin-top: 8px; color: #c9d0c6; font-size: 14px; line-height: 1.6; white-space: pre-wrap; }
+.report-detail-dialog h3 { margin-top: 18px; color: #d7ff00; font-size: 11px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }
+.report-detail-dialog dl { display: grid; gap: 6px; margin-top: 8px; }
+.report-detail-dialog dl div { display: grid; grid-template-columns: 110px 1fr; gap: 10px; border-bottom: 1px solid #222826; padding-bottom: 6px; font-size: 13px; }
+.report-detail-dialog dt { color: #8d968b; }
+.report-detail-dialog .detail-link { display: inline-block; margin-top: 16px; color: #d7ff00; font-size: 13px; font-weight: 600; }
