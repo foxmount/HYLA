@@ -1268,3 +1268,5 @@
 .report-detail-dialog dl div { display: grid; grid-template-columns: 110px 1fr; gap: 10px; border-bottom: 1px solid #222826; padding-bottom: 6px; font-size: 13px; }
 .report-detail-dialog dt { color: #8d968b; }
 .report-detail-dialog .detail-link { display: inline-block; margin-top: 16px; color: #d7ff00; font-size: 13px; font-weight: 600; }
+.hyla-dashboard .map-cluster { display: grid; place-items: center; width: 34px; height: 34px; border: 2px solid var(--hyla-neon); border-radius: 999px; color: #0a0c0c; background: var(--hyla-neon); box-shadow: 0 0 0 6px rgb(215 255 0 / 22%), 0 4px 14px rgb(0 0 0 / 45%); font-size: 13px; font-weight: 800; cursor: pointer; transition: transform .15s; }
+.hyla-dashboard .map-cluster:hover { transform: scale(1.1); }

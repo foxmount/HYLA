@@ -82,7 +82,17 @@ const map = L.map('city-map-canvas', {
   keyboard: true,
   zoomControl: false
 });
-const mapMarkers = L.layerGroup().addTo(map);
+const mapMarkers = (L.markerClusterGroup ? L.markerClusterGroup({
+  maxClusterRadius: 30,
+  spiderfyOnMaxZoom: true,
+  showCoverageOnHover: false,
+  iconCreateFunction: (cluster) => L.divIcon({
+    className: '',
+    html: `<span class="map-cluster">${cluster.getChildCount()}</span>`,
+    iconSize: [34, 34],
+    iconAnchor: [17, 17]
+  })
+}) : L.layerGroup()).addTo(map);
 
 // Light/dark map toggle (dark is the default CSS filter on the tiles).
 const MapThemeControl = L.Control.extend({
@@ -1622,6 +1632,30 @@ reportForm.addEventListener('submit', async (event) => {
     return;
   }
 
+  if (!reportId && latitudeValue && longitudeValue) {
+    const nearby = findNearbyDuplicate(Number(latitudeValue), Number(longitudeValue), formData.get('category_id'));
+    if (nearby) {
+      const status = statusDetails[nearby.report.status] || statusDetails.pending;
+      const choice = await Swal.fire({
+        icon: 'warning',
+        title: 'Possível relato duplicado',
+        html: `Já existe um relato parecido a <strong>${Math.round(nearby.distance)} m</strong> daqui:<br><br><strong>"${escapeHTML(nearby.report.title)}"</strong><br><small>${escapeHTML(nearby.report.category)} · ${status.label} · ${escapeHTML(nearby.report.time)}</small><br><br>Se for o mesmo problema, não é preciso registrar de novo.`,
+        showDenyButton: true,
+        showCancelButton: true,
+        confirmButtonText: 'Enviar mesmo assim',
+        denyButtonText: 'Ver relato existente',
+        cancelButtonText: 'Voltar',
+        confirmButtonColor: '#d7ff00',
+        denyButtonColor: '#3a423e'
+      });
+      if (choice.isDenied) openReportDetails(nearby.report.id);
+      if (!choice.isConfirmed) {
+        submitButton.disabled = false;
+        return;
+      }
+    }
+  }
+
   try {
     let imageUrl = null;
     if (imageFile) {
@@ -2010,3 +2044,22 @@ document.addEventListener('click', (event) => {
   const button = event.target.closest('[data-report-detail]');
   if (button) openReportDetails(button.dataset.reportDetail);
 });
+
+// Duplicate detection: unresolved report of the same category within 50 m.
+function distanceInMeters([lat1, lng1], [lat2, lng2]) {
+  const toRad = (value) => (value * Math.PI) / 180;
+  const dLat = toRad(lat2 - lat1);
+  const dLng = toRad(lng2 - lng1);
+  const a = Math.sin(dLat / 2) ** 2 + Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLng / 2) ** 2;
+  return 6371000 * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+}
+
+function findNearbyDuplicate(lat, lng, categoryId) {
+  let best = null;
+  reports.forEach((report) => {
+    if (!report.location || report.status === 'resolved' || report.categoryId !== categoryId) return;
+    const distance = distanceInMeters([lat, lng], report.location);
+    if (distance <= 50 && (!best || distance < best.distance)) best = { report, distance };
+  });
+  return best;
+}
